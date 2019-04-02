@@ -1,0 +1,106 @@
+gaussFilter <- function(prof, sig = 1){
+  sz <- ceiling(sig * 6)    # length of gaussian filter vector
+  if (sz < 2){
+    sz <- 2
+  }
+  if (sz %% 2 != 0){
+    sz <- sz + 1
+  }
+  x <- seq(-sz / 2, sz / 2, length = sz + 1)
+  filterVec <- exp(-x ^ 2 / (2 * sig ^ 2))
+  filterVec <- filterVec / sum (filterVec) # normalize
+  filtered <- convolve(prof, filterVec, type = 'open')
+  return(filtered[(sz / 2 + 1):(length(filtered) - sz / 2)])
+}
+
+
+smoTest <- function(xcmsLargeWin, groupInd, data, x_range, rt_v, sampleInd, path, parSamp){
+  # groupInd = 176;
+  # sampleInd = parInd[1:parNum[n], n]
+  peaks <- xcmsLargeWin@peaks
+  groupidx <- xcmsLargeWin@groupidx
+
+  prePeaks <- peaks[groupidx[[groupInd]], ]
+  prePeaks <- prePeaks[is.element(prePeaks[ , 'sample'], sampleInd), ]
+
+  if (length(prePeaks) == 0){
+    statRes <- matrix(-1, 3, 3)
+  } else{
+    prePeakMed <- prePeaks[, 'rt']
+
+    sampleCount <- table(prePeaks[ , 'sample'])
+    groupNum <- max(sampleCount)
+    groupSam <- as.numeric(names(sampleCount)[which.max(sampleCount)])
+    if (groupNum != 1)
+      groupSam <- as.numeric(names(sampleCount)[which(sampleCount == groupNum)])
+
+    if (length(groupSam)>1){
+      maxRange <- 0
+      maxInd <- 0
+      for (ind in 1:length(groupSam)){
+        samPeaks <- prePeaks[prePeaks[ , 'sample'] ==  groupSam[ind], 'rt']
+        if (max(samPeaks) - min(samPeaks) > maxRange){
+          maxRange <- max(samPeaks) - min(samPeaks)
+          maxInd <- groupSam[ind]
+        }
+      }
+      groupSam <- if (maxRange == 0) groupSam[1] else maxInd
+    }
+
+    kmeansPreInd <- kmeans(prePeakMed, prePeaks[prePeaks[ , 'sample'] == groupSam, 'rt'])
+
+    oriPeakGroup <- vector('list', groupNum)
+    XCMSPeakGroup <- vector('list', groupNum)
+    ncGTWPeakGroup <- vector('list', groupNum)
+
+    for (n in 1:dim(prePeaks)[1])
+      XCMSPeakGroup[[kmeansPreInd$cluster[n]]] <-
+      c(XCMSPeakGroup[[kmeansPreInd$cluster[n]]], prePeakMed[n])
+
+    ncGTWPeakMed <- prePeakMed * 0
+
+    for (n in 1:length(ncGTWPeakMed)){
+    temp_min = min(abs(x_range - rtp(pre_peak_med(n), XCMS_data.rt_xcms999(:,pre_peak(n,11)))));
+    temp_v = abs(x_range - rtp(pre_peak_med(n), XCMS_data.rt_xcms999(:,pre_peak(n,11))));
+
+    temp_axis_ind = find(temp_v == temp_min);
+
+    temp_sam_ind = find(sample_ind == pre_peak(n, 11));
+
+
+    [~, temp_ind] = max(t_M_temp(temp_sam_ind,temp_axis_ind));
+    temp_axis_ind = temp_axis_ind(temp_ind);
+
+    if temp_axis_ind-5 < 1
+    temp_sta = 1;
+    else
+      temp_sta= temp_axis_ind-5;
+    end
+    if temp_axis_ind+5 > size(t_M_temp, 2)
+    temp_end = size(t_M_temp, 2);
+    else
+      temp_end= temp_axis_ind+5;
+    end
+
+    temp_axis_ind = temp_sta:temp_end;
+
+
+    [~, temp_ind] = max(t_M_temp(temp_sam_ind,temp_axis_ind));
+    temp_axis_ind = temp_axis_ind(temp_ind);
+    pre_peak_med(n) = rt_v(x_range(temp_axis_ind));
+
+    temp_path = path{temp_sam_ind};
+
+
+    gtw_peak_med(n) = rt_v(x_range(round(mean(temp_path(find(temp_path(:,2)==temp_axis_ind),1)))));
+
+    }
+
+
+
+  }
+
+
+
+
+}

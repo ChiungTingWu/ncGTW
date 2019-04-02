@@ -1,0 +1,200 @@
+[
+    {
+        "definitions" : [
+            {
+                "column" : 8,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/graphCut.cpp",
+                "kind" : 6,
+                "line" : 6,
+                "name" : "round(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@round"
+            },
+            {
+                "column" : 5,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/graphCut.cpp",
+                "kind" : 6,
+                "line" : 12,
+                "name" : "isInteger(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@isInteger#d#"
+            },
+            {
+                "column" : 43,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/graphCut.cpp",
+                "kind" : 8,
+                "line" : 17,
+                "name" : "GraphType",
+                "parent_name" : "",
+                "usr" : "c:graphCut.cpp@196@T@GraphType"
+            },
+            {
+                "column" : 15,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/graphCut.cpp",
+                "kind" : 6,
+                "line" : 20,
+                "name" : "graphCut(NumericMatrix, NumericMatrix)",
+                "parent_name" : "",
+                "usr" : "c:@F@graphCut#$@N@Rcpp@C@Matrix>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#S0_#"
+            }
+        ],
+        "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/graphCut.cpp",
+        "file_last_write" : 1551215737
+    },
+    {
+        "definitions" : [
+            {
+                "column" : 112,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+                "kind" : 7,
+                "line" : 129,
+                "name" : "augment(IBFSGraph::arc *, IBFSGraph::AugmentationInfo *)",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@augment#*$@CT>3#T#T#T@IBFSGraph@S@arc#*$@CT>3#T#T#T@IBFSGraph@S@AugmentationInfo#"
+            },
+            {
+                "column" : 112,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+                "kind" : 7,
+                "line" : 334,
+                "name" : "adoptionSrc",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@adoptionSrc#"
+            },
+            {
+                "column" : 54,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+                "kind" : 7,
+                "line" : 440,
+                "name" : "adoptionSink",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@adoptionSink#"
+            },
+            {
+                "column" : 112,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+                "kind" : 7,
+                "line" : 542,
+                "name" : "prepareGraph",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@prepareGraph#"
+            },
+            {
+                "column" : 116,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+                "kind" : 7,
+                "line" : 646,
+                "name" : "maxflowClean",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@maxflowClean#"
+            }
+        ],
+        "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.cpp",
+        "file_last_write" : 1551136930
+    },
+    {
+        "definitions" : [
+            {
+                "column" : 73,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 2,
+                "line" : 14,
+                "name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "parent_name" : "",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph"
+            },
+            {
+                "column" : 4,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 8,
+                "line" : 21,
+                "name" : "termtype",
+                "parent_name" : "",
+                "usr" : "c:ibfs.h@241@CT>3#T#T#T@IBFSGraph@T@termtype"
+            },
+            {
+                "column" : 14,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 8,
+                "line" : 22,
+                "name" : "node_id",
+                "parent_name" : "",
+                "usr" : "c:ibfs.h@301@CT>3#T#T#T@IBFSGraph@T@node_id"
+            },
+            {
+                "column" : 11,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 7,
+                "line" : 37,
+                "name" : "maxflow",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@maxflow#"
+            },
+            {
+                "column" : 9,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 3,
+                "line" : 51,
+                "name" : "arc",
+                "parent_name" : "",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@S@arc"
+            },
+            {
+                "column" : 9,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 3,
+                "line" : 63,
+                "name" : "node",
+                "parent_name" : "",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@S@node"
+            },
+            {
+                "column" : 9,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 3,
+                "line" : 81,
+                "name" : "AugmentationInfo",
+                "parent_name" : "",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@S@AugmentationInfo"
+            },
+            {
+                "column" : 119,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 7,
+                "line" : 133,
+                "name" : "add_tweights(int, tcaptype, tcaptype)",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@add_tweights#I#t0.1#S0_#"
+            },
+            {
+                "column" : 119,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 7,
+                "line" : 155,
+                "name" : "add_edge(int, int, captype, captype)",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@add_edge#I#I#t0.0#S0_#"
+            },
+            {
+                "column" : 172,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 7,
+                "line" : 177,
+                "name" : "what_segment(int, termtype)",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@what_segment#I#$@CT>3#T#T#T@IBFSGraph@EA@termtype#"
+            },
+            {
+                "column" : 118,
+                "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+                "kind" : 7,
+                "line" : 193,
+                "name" : "add_node(int)",
+                "parent_name" : "IBFSGraph<captype, tcaptype, flowtype>",
+                "usr" : "c:@CT>3#T#T#T@IBFSGraph@F@add_node#I#"
+            }
+        ],
+        "file" : "C:/Users/cbil/Dropbox/virginia research/project5/rcode/ncGTW/src/ibfs.h",
+        "file_last_write" : 1551134285
+    }
+]

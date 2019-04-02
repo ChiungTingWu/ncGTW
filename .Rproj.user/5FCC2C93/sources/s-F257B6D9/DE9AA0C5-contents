@@ -1,0 +1,195 @@
+####################################################################################
+## XCMS processing, MESA P2 LPOS LC-MS data                                       ##
+## Adapted from Bentobox v3 (Paul Benton and Matt Lewis, Imperial College London) ##
+## Kate Leary, 12 September 2017                                                  ##
+####################################################################################
+
+library(xcms)
+library(snow) ## this needs to be changed for the most recent update of XCMS as the parallelisation has changed
+
+####################
+## Peak detection ##
+####################
+
+## Minimum and maximum chromatographic peak width detectable (seconds)
+CPWmin = 3 # UPLC peakwidths can be as narrow as this - in practice, they are not usually so short but the other parameters ensure noise peaks are not prevalent
+CPWmax = 20 # widest peak appears to be about 20s but I generally add some time to this as peaks are not easy to deconvolve by eye
+
+## Estimation of mass accuracy for centroid data (ppm)
+# Select three peaks from different parts of the chromatogram (ideally identified/known features), find the beginning and end scans, 
+# note each mass measurement of the centroided peak for each scan. Calculate the mean mass value and the ppm difference between each 
+# scan and the average value; greater confidence can be ensured for the mass accuracy of the instrument if knowns are used.
+ppm = 15 # calculated from the raw data - see spreadsheet in zipfile
+
+## Signal to noise threshold cutoff
+# Check smallest peak which clears the baseline. Calculate ratio of intensity value compared with "grass" baseline peaks 
+# (this gives a conservative estimate; the highest signal in the baseline is usually much higher than the average baseline signal)
+xsnthresh = 200 # generous, but minimum acceptable S/N
+snth = 10
+## Lockmass files included in peakpicking (no = F)
+LM=F # in practice, including LM files does not appear to really influence final result - also peakpicking does not always appear to work when included
+
+## Integration type (1=on waves, 2=on raw data)
+integrate=2 # raw data of sufficient quality that it can be used directly. Would consider waves in presence of strong peak asymmetry/skew, but generally unecessary
+
+## Number of core processors to be used
+nSlaves = 6
+
+## Retention time error, first iteration of grouping (in seconds)
+RTerror=6 # check drift of peak tops from chromatograms - see spreadsheet in zipfile
+
+## m/z error, first iteration of grouping (in Da)
+# Similar to ppm, not completely necessary to specify
+MZerror=0.05 # generous - decreasing seems to produce some unnecessary reduction in detected peak numbers
+
+## Prefilter - c(n,x) only retains n number of scans with x intensity. Derive from raw data and scan rate
+# 15 datapoints required for adequate peak representation - intensity needs to clear the baseline unless background 
+# peaks are known to be high. I prefer this criteria to the "noise" parameter as unless the noise intensity is very
+# clearly defined, it can result in loss of peak tails
+prefilter=c(6, 1000)
+ 
+## NOTES: 
+# Other peak selection parameters can be applied - I generally find these result in unnecessary reduction in detected  
+# peak numbers unless the data is acquired from e.g. a Synapt or other extremely sensitive instrument (although even 
+# Orbitraps and FT-ICR instruments generally have less noise due to baseline removal and longer ion flight times).
+# Xevos are not even nearly as sensitive as Synapts in this respect - please call me for a discussion of this if required.
+
+mzdiff = -1
+##################
+## Peak picking ##
+##################
+temp_path <- getwd()
+#temp_files <- character()
+#for (n in 1:22)
+#{
+  temp_files <- list.files(temp_path, pattern = "mzXML", recursive = F, full.names = T)
+#}
+
+
+temp_ind = matrix(0, length(temp_files), 1)
+for (n in 1:length(temp_files))
+{
+       temp_cha <- temp_files[n]
+       temp_len <- nchar(temp_cha)
+       temp_ind[n] <- substr(temp_cha, regexpr("pos_", temp_cha), temp_len-6)
+}
+#all_order <- read.csv("PipelineTest U RPOS Basic CSV.csv")
+#all_order <- all_order[sort.int(all_order[,10], index.return = T)[[2]],]   
+   
+#file_order <- matrix(0, length(temp_ind), 1)
+#for (n in 1:length(temp_ind))
+#  file_order[n] <- which(temp_ind[n] == all_order[,2])
+
+#temp_files <- temp_files[sort.int(file_order, index.return = T)[[2]]]
+   
+   
+   
+  # peak detection using centWave
+Sys.time()
+ds <- xcmsSet(temp_files, method="centWave", peakwidth=c(CPWmin,CPWmax), ppm=ppm, noise=xsnthresh, snthresh = snth,
+              integrate=integrate, nSlaves=nSlaves, prefilter=prefilter, mzdiff = mzdiff)
+Sys.time()
+
+#####################
+## OBI-warp thread ##
+#####################
+
+# Perform obiwarp RT correction. Select centre chromatogram from "most central" internal QC chromtogram
+# Consult raw data in MassLynx or plot TICs with legend
+obagds <- retcor(ds, method="obiwarp",profStep=0.1, plottype="deviation", center=3) # increasing profStep for any step generally results in a massive increase in processing times
+# 20 for last set
+
+#  Group peaks together across samples
+bw = 7 # adjust
+gagds <- group(obagds, method="density", mzwid=MZerror, bw=bw) # using method "nearest" results in extremely long processing times with no commensurate gain in grouping improvement
+
+# Identify peak groups and integrate samples
+fds <- fillPeaks(gagds)
+
+# Backs up data before further manipulations
+fill<-fds
+
+# constructs raw data section from xcms 
+vals.raw<-groupval(fill, "medret", "into")
+
+# Concatanates all relevant data
+vals.raw.meta<-cbind(groups(fill), vals.raw)
+
+## MFC normalisation
+normalize.medFC <- function(mat) { 
+  medSam <- apply(mat, 1, median) 
+  medSam[which(medSam==0)] <- 0.0001 
+  mat <- apply(mat, 2, function(mat, medSam){ 
+    medFDiSmpl <- mat/medSam 
+    vec<-mat/median(medFDiSmpl) 
+    return(vec) 
+  }, medSam) 
+  return (mat) 
+} 
+
+# Performs normalization - outputs normalised values in peak-picked data (not xcmsSet object)
+vals.raw.norm<-normalize.medFC(vals.raw)
+
+# Binds metadata onto normalized values 
+vals.raw.norm.meta<-cbind(groups(fill), vals.raw.norm)  
+
+# Writes the file to .csv
+write.csv(vals.raw.meta, file="MESA_P2_LPOS_subset_obiwarp_noQCs_14Sept2017_RAW.csv") # change filename as appropriate
+write.csv(vals.raw.norm.meta, file="MESA_P2_LPOS_subset_obiwarp_noQCs_14Sept2017_RAW_MFCnorm.csv") # change filename as appropriate
+
+
+##################
+## LOESS thread ##
+##################
+
+# Matches ("groups") peaks across samples (rtCheck = maximum amount of time from the median RT) - must be peformed before LOESS RT correction
+gds <- group(ds, method="density", mzwid=MZerror, bw=RTerror, minfrac = 0.25)
+
+# Calculate retention time deviations using well defined groups 
+# note that this MAY not be needed if raw data deviations are very low - review TIC overlay before and after RT correction
+# missing = number missing from entire data set (set according to # of blanks and highly diluted samples)
+agds <- retcor(gds, method="peakgroups", family="s", missing = 9, extra=9)
+# agds2<- retcor(gds, method="peakgroups", family="s", missing=240,extra=0, span = 0.7)
+# Group peaks together across samples
+bw = 7 # adjust
+lagds <- group(agds, method="density", mzwid=MZerror, bw=bw)
+
+    agds <- retcor(lagds, method = "peakgroups", family = "s", missing = 67, extra = 67)
+    lagds <- group(agds, method = "density", mzwid = MZerror, bw = bw)
+
+
+# Identify peak groups and integrate samples
+lfds <- fillPeaks(lagds)
+
+# Backs up data before further manipulations
+lfill<-lfds
+
+# Constructs raw data section from xcms 
+loess.vals.raw<-groupval(lfill, "medret", "into")
+
+# Concatanates all relevant data
+loess.vals.raw.meta<-cbind(groups(lfill), loess.vals.raw)
+
+# Performs normalization - outputs normalised values in peak-picked data (not xcmsSet object)	
+loess.vals.raw.norm<-normalize.medFC(loess.vals.raw)
+
+# Binds metadata onto normalized values
+loess.vals.raw.norm.meta<-cbind(groups(lfill), loess.vals.raw.norm)  
+
+# Writes the file to .csv
+write.csv(loess.vals.raw.meta, file="MESA_P2_LPOS_subset_LOESS_noQCs_14Sept2017_RAW.csv") # change filename as appropriate
+write.csv(loess.vals.raw.norm.meta, file="MESA_P2_LPOS_subset_LOESS_noQCs_14Sept2017_RAW_MFCnorm.csv") # change filename as appropriate
+
+###################
+
+View(ds@peaks[lagds@groupidx[[731]],])
+View(ds@peaks[lagds@groupidx[[832]],])
+
+
+attributes(lfill@rt)
+
+View(lfill@rt$corrected)
+
+
+View(lagds@groups)
+View(ds@peaks[lagds@groupidx[[244]],])

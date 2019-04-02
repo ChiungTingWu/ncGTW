@@ -1,0 +1,58 @@
+library(xcms)
+
+CPWmin = 3 # UPLC peakwidths can be as narrow as this - in practice, they are not usually so short but the other parameters ensure noise peaks are not prevalent
+CPWmax = 20 # widest peak appears to be about 20s but I generally add some time to this as peaks are not easy to deconvolve by eye
+ppm = 15 # calculated from the raw data - see spreadsheet in zipfile
+xsnthresh = 200 # generous, but minimum acceptable S/N
+snth = 10
+LM=F # in practice, including LM files does not appear to really influence final result - also peakpicking does not always appear to work when included
+integrate=2 # raw data of sufficient quality that it can be used directly. Would consider waves in presence of strong peak asymmetry/skew, but generally unecessary
+RTerror=6 # check drift of peak tops from chromatograms - see spreadsheet in zipfile
+MZerror=0.05
+prefilter=c(6, 1000)
+mzdiff = -1
+
+
+temp_path <- getwd()
+tempFiles <- list.files(getwd(), pattern = "mzXML", recursive = F, full.names = T)
+
+
+
+tempInd <- matrix(0, length(tempFiles), 1)
+for (n in 1:length(tempFiles))
+{
+  tempCha <- tempFiles[n]
+  tempLen <- nchar(tempCha)
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("iQC", tempCha) + 3, tempLen - 6))
+}
+
+tempFiles <- tempFiles[sort.int(tempInd, index.return = TRUE)$ix]
+
+
+bpParam <- SnowParam(workers = 8)
+
+print(time1 <- Sys.time())
+ds <- xcmsSet(tempFiles, method="centWave", peakwidth=c(CPWmin,CPWmax), ppm=ppm,
+              noise=xsnthresh, snthresh = snth, integrate=integrate,
+              prefilter=prefilter, mzdiff = mzdiff, BPPARAM = bpParam)
+print(time2 <- Sys.time())
+print((time2 - time1))
+
+gds <- group(ds, method="density", mzwid=MZerror, bw=RTerror, minfrac = 0.25)
+agds <- retcor(gds, method="peakgroups", family="s", missing = 5, extra=5)
+bw = 7 # adjust
+Sys.time()
+xcmsLargeWin <- group(agds, method="density", mzwid=MZerror, bw=bw, minfrac = 0.5)
+Sys.time()
+xcmsSmallWin <- group(agds, method="density", mzwid=MZerror, bw=0.3, minfrac = 0.00001, minsamp = 2)
+Sys.time()
+
+excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+filePaths <- xcmsLargeWin@filepaths
+time3 <- Sys.time()
+ncGTWinputs <- loadProfile(filePaths, excluGroups, BPPARAM = bpParam)
+time4 <- Sys.time()
+print(time4 - time3)
+
+# matplot(t(profInfo$groupProf[[6]]), type = 'l')
+ncGTWinput <- ncGTWinputs[[2]]

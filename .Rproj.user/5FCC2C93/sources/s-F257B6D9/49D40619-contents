@@ -1,0 +1,90 @@
+loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profstep = 0.01, BPPARAM = bpparam()){
+  groupNum <- dim(excluGroups)[1]
+  fileNum <- length(filePaths)
+
+  mzRange <- excluGroups[,c('mzmin', 'mzmax')]
+  mzRange[,'mzmin'] <- mzRange[,'mzmin'] - mzAdd
+  mzRange[,'mzmax'] <- mzRange[,'mzmax'] + mzAdd
+  rtRange <- excluGroups[,c('rtmin', 'rtmax')]
+  rtRange[,'rtmin'] <- rtRange[,'rtmin'] - rtAdd
+  rtRange[,'rtmax'] <- rtRange[,'rtmax'] + rtAdd
+
+
+  t1 <- Sys.time()
+  eicList <- suppressWarnings(bplapply(filePaths, loadEic, mzRange, rtRange, profstep, BPPARAM = BPPARAM))
+  t2 <- Sys.time()
+  print(t2 -t1)
+
+  groupProf <- vector("list", groupNum)
+  groupRt <- vector("list", groupNum)
+  names(groupProf) <- paste0('group', excluGroups[, 'index'])
+  names(groupRt) <- names(groupProf)
+
+  maxMinArr <- array(0, c(groupNum, fileNum, 2))
+  for (i in 1:groupNum){
+    for (j in 1:fileNum){
+      maxMinArr[i, j, 1] <- min(eicList[[j]][[i]][,1])
+      maxMinArr[i, j, 2] <- max(eicList[[j]][[i]][,1])
+    }
+  }
+
+  maxMinMat <- matrix(0, groupNum, 2)
+  maxMinMat[, 1] <- apply(maxMinArr[ , , 1], 1, max)
+  maxMinMat[, 2] <- apply(maxMinArr[ , , 2], 1, min)
+
+  maxMinInd <- array(0, c(groupNum, fileNum, 2))
+  LenMat <- matrix(0, groupNum, fileNum)
+  for (i in 1:groupNum){
+    for (j in 1:fileNum){
+      maxMinInd[i, j, 1] <- which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 1]))
+      maxMinInd[i, j, 2] <- which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 2]))
+      LenMat[i, j] <- maxMinInd[i, j, 2] - maxMinInd[i, j, 1] + 1
+    }
+  }
+
+  LenVec <- matrix(0, groupNum, 1)
+  for (n in 1:groupNum){
+    if (length(unique(LenMat[n,])) != 1){
+      warning('The RT resolution may not be same for some samples...')
+      LenVec[n] <- min(LenMat[n,])
+    } else{
+      LenVec[n] <- unique(LenMat[n,])
+    }
+  }
+
+  for (i in 1:groupNum){
+    groupProf[[i]] <- matrix(0, fileNum, LenVec[i])
+    groupRt[[i]] <- matrix(0, fileNum, LenVec[i])
+    for (j in 1:fileNum){
+      rtProf <- eicList[[j]][[i]][maxMinInd[i, j, 1]:( maxMinInd[i, j, 1] + LenVec[i] - 1), ]
+      groupRt[[i]][j, ] <- rtProf[ , 1]
+      groupProf[[i]][j, ] <- rtProf[ , 2]
+    }
+  }
+
+  ncGTWinputs <- vector('list', groupNum)
+  for (n in 1:groupNum){
+    ncGTWinputs[[n]] <- list(groupInfo = excluGroups[n, ],
+                             profiles = groupProf[[n]], rtRaw = groupRt[[n]])
+  }
+
+  return(ncGTWinputs)
+}
+
+
+
+loadEic <- function(filePath, mzRange, rtRange, profstep){
+  suppressMessages(require(xcms, quietly = TRUE))
+  # rawProf <- suppressMessages(xcmsRaw(filePath, profstep))
+  # rawEic <- getEIC(rawProf, mzRange, rtRange)
+  rawProf <- suppressMessages(xcmsRaw(filePath, 0))
+  rawEic <- vector('list', dim(mzRange)[1])
+  for (n in 1: dim(mzRange)[1]){
+    tempEic <- rawEIC(rawProf, mzRange[n, ], rtRange[n, ])
+    rawEic[[n]] <- cbind(tempEic$scan, tempEic$intensity)
+  }
+  rm(rawProf)
+  gc()
+  # return(rawEic@eic$xcmsRaw)
+  return(rawEic)
+}
