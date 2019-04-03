@@ -72,7 +72,6 @@ for (n in 1:dim(excluGroups)[1]){
   adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
   ncGTWres@peaks <- adjustRes$peaks
   ncGTWRt[[n]] <- adjustRes$rtncGTW
-  allTime[[n]] <- Sys.time()
   cat(format(Sys.time()), 'Group', ncGTWinputs[[n]]$groupInfo['index'], 'is adjusted.\n')
 }
 
