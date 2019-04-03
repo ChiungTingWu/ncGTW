@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+src/*.o
+src/*.so
+src/*.dll
+
+
+tests
+test_files
+*.R
+*.Rproj
+*.Rmd
+

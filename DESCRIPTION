@@ -1,16 +1,16 @@
 Package: ncGTW
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Profile Alignment by Neighbor-wise Compound-specific Graphical Time Warping with Misalignment Detection
+Version: 0.5.0
+Author: Chiung-Ting Wu <ctwu@vt.edu>
+Maintainer: Chiung-Ting Wu <ctwu@vt.edu>
+Description: The purpose of ncGTW is to help XCMS for LC-MS data alignment. Currently, ncGTW can detect the misaligned feature groups by XCMS, and the user can choose to realign these feature groups by ncGTW or not.
+License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp
+    Rcpp,
+    xcms
