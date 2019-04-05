@@ -122,7 +122,7 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
     return(groupInfo)
 }
 
-exclusiveGroups <- function(groupInfo, ppm){
+exclusiveGroups <- function(groupInfo, ppm, qThre){
     excluGroupsNum <- vector('integer', length(groupInfo$largeWinGroupidx))
     excluLargeSmall <- vector('list', length(groupInfo$largeWinGroupidx))
     excluPval <- vector('list', length(groupInfo$largeWinGroupidx))
@@ -131,7 +131,7 @@ exclusiveGroups <- function(groupInfo, ppm){
 
     for (n in 1:length(groupInfo$largeWinGroupidx)){
         tempInd <- groupInfo$matchGroupIdx[[n]]
-        tempInd <- tempInd[groupInfo$qvalues[tempInd] < 0.05]
+        tempInd <- tempInd[groupInfo$qvalues[tempInd] < qThre]
 
         if (length(tempInd) > 1){
             tempGroups <- groupInfo$smallWinSampleidx[tempInd]
@@ -167,16 +167,11 @@ exclusiveGroups <- function(groupInfo, ppm){
     return(excluInfo)
 }
 
-misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm){
+misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05, maxRtWin = 50){
     groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
-    excluInfo <- exclusiveGroups(groupInfo, ppm)
+    excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
     excluGroups <- excluInfo$excluGroups
-    #keepIdx <- vector('logical', dim(excluGroups)[1])
-    #for (n in 1:dim(excluGroups)[1]){
-    #    if (min(excluInfo$excluPval[[excluGroups[n,'index']]]) <= 0.05){
-    #        keepIdx[n] = TRUE
-    #    }
-    #}
-    #excluGroups <- excluGroups[keepIdx,]
-    return(excluGroups)
+
+    rtWin <-  excluGroups[ , 'rtmax'] - excluGroups[ , 'rtmin']
+    return(excluGroups[rtWin < maxRtWin, ])
 }

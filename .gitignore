@@ -8,8 +8,7 @@ src/*.dll
 
 
 tests
-test_files
-*.R
+tempCode
 *.Rproj
 *.Rmd
 
