@@ -246,11 +246,11 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
                           mu, sigma, biP, weiP, rangeThre){
   suppressPackageStartupMessages({require(ncGTW)})
   n <- parInfo$num
-  cat(format(Sys.time()), 'Zero', n, 'of', parSect, '\n')
+  # cat(format(Sys.time()), 'Zero', n, 'of', parSect, '\n')
   parspec <- parInfo$parSpec
   parnum <- parInfo$parNum
   parind <- parInfo$parInd
-  cat(format(Sys.time()), 'First', n, 'of', parSect, '\n')
+  # cat(format(Sys.time()), 'First', n, 'of', parSect, '\n')
   gtwPrep <- buildMultiParaValidmap(parspec[1:parnum, ], mir, strNum, diaNum, biP)
   ref <- gtwPrep$ref
   tst <- gtwPrep$tst
@@ -266,7 +266,7 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
   costMin <- cut0[length(cut0)]
   s1BrokenNum <- sum((cut0[eeBet[ ,1]] + cut0[eeBet[ ,2]]) == 1)
   parS1BrokenNum <- s1BrokenNum #####
-  cat(format(Sys.time()), 'Second', n, 'of', parSect, '\n')
+  # cat(format(Sys.time()), 'Second', n, 'of', parSect, '\n')
   param <- initGtwParam(validMap, noiseVar, maxStp, 10^32, dia, logt, nor)
   gtwInfoMerge <- buildGTWgraph( ref, tst, validMap, param, mu, sigma, biP, weiP, 2)
   cutMerge <- graphCut(gtwInfoMerge$ss, gtwInfoMerge$ee)
@@ -278,7 +278,7 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
   smoM[1, 1] <- smoTemp
   tempPath <- vector('list', dim(smoM)[1])
 
-  cat(format(Sys.time()), 'Third', n, 'of', parSect, '\n')
+  # cat(format(Sys.time()), 'Third', n, 'of', parSect, '\n')
   for (smo in 1:dim(smoM)[1]){
     param <- initGtwParam(validMap, noiseVar, maxStp, smoM[smo, 1], dia, logt, nor)
     cat(format(Sys.time()), 'Built the structure of ncGTW stage 1, section', n, 'of', parSect, '\n')

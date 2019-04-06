@@ -268,6 +268,10 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
         ncGTWEnd <- ncGTWEnd - (rawEnd - dim(scanRangeOld)[2])
         rawEnd <- dim(scanRangeOld)[2]
       }
+      if (ncGTWEnd > dim(rtRawSub)[2]){
+        rawEnd <- rawEnd - (ncGTWEnd - dim(rtRawSub)[2])
+        ncGTWEnd <- dim(rtRawSub)[2]
+      }
       if (rawSta < 1){
         ncGTWSta <- ncGTWSta + (1 - rawSta)
         rawSta <- 1

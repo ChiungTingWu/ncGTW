@@ -65,7 +65,7 @@ ncGTWoutputs <- vector('list', dim(excluGroups)[1])
 
 cat(format(Sys.time()), 'ncGTW starts !\n')
 for (n in 1:dim(excluGroups)[1]){
-  ncGTWoutputs[[n]] <- ncGTW(ncGTWinputs[[n]], xcmsLargeWin, 10)
+  ncGTWoutputs[[n]] <- ncGTW(ncGTWinputs[[n]], xcmsLargeWin, 50, bpParam = SnowParam(workers = 8))
   allTime[[n]] <- Sys.time()
   cat(format(Sys.time()), 'Group', ncGTWinputs[[n]]$groupInfo['index'], 'is realigned.\n')
 }
@@ -78,6 +78,15 @@ for (n in 1:dim(excluGroups)[1]){
   ncGTWRt[[n]] <- adjustRes$rtncGTW
   cat(format(Sys.time()), 'Group', ncGTWinputs[[n]]$groupInfo['index'], 'is adjusted.\n')
 }
+
+
+savePath <- "C:/Users/cbil/Google Drive/5th project/XCMS_analysis/mesa/iQC335_040419/figure/ncgtw"
+
+for (n in 1:length(ncGTWinputs)){
+  plotGroup(ncGTWinputs[[n]], ncGTWRt[[n]], ind = n, savePath = savePath)
+  Sys.sleep(5)
+}
+
 
 ncGTWres@groups <- excluGroups[ , 2:9]
 ncGTWres@groupidx <- xcmsLargeWin@groupidx[excluGroups[ , 1]]
