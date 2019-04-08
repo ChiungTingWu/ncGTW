@@ -97,6 +97,9 @@ for (n in 1:length(ncGTWres@filepaths)){
     ncGTWres@rt$corrected[[n]][[m]] <- ncGTWRt[[m]][[n]]
 }
 
+XCMSres <- xcmsLargeWin
+XCMSres@groups <- excluGroups[ , 2:9]
+XCMSres@groupidx <- xcmsLargeWin@groupidx[excluGroups[ , 1]]
 
 require(xcms)
 require(ncGTW)
@@ -104,9 +107,17 @@ require(ncGTW)
 assignInNamespace("fillPeaksChromPar", fillPeaksChromPar, ns="xcms",
                   envir = as.environment("package:xcms"))
 
-Sys.time()
-ncGTWresFilled <- fillPeaks(ncGTWres, BPPARAM = SnowParam(workers = 8))
-Sys.time()
+time5 <- Sys.time()
+ncGTWresFilled <- fillPeaks(ncGTWres, BPPARAM = SnowParam(workers = 14))
+time6 <- Sys.time()
+print(time6 - time5)
+
+time7 <- Sys.time()
+XCMSresFilled <- fillPeaks(XCMSres, BPPARAM = SnowParam(workers = 14))
+time8 <- Sys.time()
+print(time8 - time7)
+
+
 View(ncGTWresFilled@peaks)
 n = 59
 

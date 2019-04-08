@@ -1,7 +1,11 @@
 plotGroup <- function(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[1],
-                      ind = NULL, savePath = NULL, show = TRUE, sub = TRUE){
+                      ind = NULL, savePath = NULL, show = TRUE, sub = TRUE, filter = FALSE){
   samNum <- dim(ncGTWinput$rtRaw)[1]
   profiles <- ncGTWinput$profiles
+  if (filter)
+    for (n in 1:samNum)
+      profiles[n, ] <- gaussFilter(profiles[n, ])
+
   rtRange <- matrix(0, samNum, dim(ncGTWinput$rtRaw)[2])
   for (n in 1:samNum)
     rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]

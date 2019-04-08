@@ -1,26 +1,41 @@
 ncGTW <- function(ncGTWinput, xcmsLargeWin, parSamp = 10, bpParam = bpparam(), ncGTWparam = NULL){
 
   downSample <- if (is.null(ncGTWparam$downSample)) 2 else ncGTWparam$downSample
+  ncGTWparam$downSample <- downSample
   nor <- if (is.null(ncGTWparam$nor)) 1 else ncGTWparam$nor
+  ncGTWparam$nor <- nor
   strNum <- if (is.null(ncGTWparam$strNum)) 1 else ncGTWparam$strNum
+  ncGTWparam$strNum <- strNum
   diaNum <- if (is.null(ncGTWparam$diaNum)) 1 else ncGTWparam$diaNum
+  ncGTWparam$diaNum <- diaNum
 
   mir <- if (is.null(ncGTWparam$mir)) TRUE else ncGTWparam$mir
+  ncGTWparam$mir <- mir
 
 
   maxStpRat <- if (is.null(ncGTWparam$maxStpRat)) 0.6 else ncGTWparam$maxStpRat
+  ncGTWparam$maxStpRat <- ncGTWparam
   maxStp <- if (is.null(ncGTWparam$maxStp)) round(dim(ncGTWinput$rtRaw)[2] %/%
                                                     downSample * maxStpRat) else ncGTWparam$maxStp
+  ncGTWparam$maxStp <- maxStp
   rangeThre <- if (is.null(ncGTWparam$rangeThre)) 1 else ncGTWparam$rangeThre
+  ncGTWparam$rangeThre <- rangeThre
 
 
   biP <- if (is.null(ncGTWparam$biP)) TRUE else ncGTWparam$biP
+  ncGTWparam$biP <- biP
   mu <- if (is.null(ncGTWparam$mu)) 0 else ncGTWparam$mu
+  ncGTWparam$mu <- mu
   sigma <- if (is.null(ncGTWparam$sigma)) 1 else ncGTWparam$sigma
+  ncGTWparam$sigma <- sigma
   weiP <- if (is.null(ncGTWparam$weiP)) 0 else ncGTWparam$weiP
+  ncGTWparam$weiP <- weiP
   logt <- if (is.null(ncGTWparam$logt)) 0 else ncGTWparam$logt
+  ncGTWparam$logt <- logt
   dia <- if (is.null(ncGTWparam$dia)) 0 else ncGTWparam$dia
+  ncGTWparam$dia <- dia
   noiseVar <- if (is.null(ncGTWparam$noiseVar)) 1 else ncGTWparam$noiseVar
+  ncGTWparam$noiseVar <- noiseVar
 
 
   groupInd <- ncGTWinput$groupInfo[1]

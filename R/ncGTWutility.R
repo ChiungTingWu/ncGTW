@@ -119,3 +119,67 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange, sampleInd, path2
   return(statResult)
 
 }
+
+meanCorOl <- function(ncGTWinput, sampleRt){
+  samNum <- dim(ncGTWinput$rtRaw)[1]
+  pointNum <- dim(ncGTWinput$rtRaw)[2]
+  profiles <- ncGTWinput$profiles
+  rtRange <- matrix(0, samNum, pointNum)
+  for (n in 1:samNum){
+    profiles[n, ] <- gaussFilter(profiles[n, ])
+    rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
+  }
+  proInter <- matrix(0, samNum, pointNum * 10)
+  interX <- seq(max(rtRange[ , 1]), min(rtRange[ , pointNum]), length.out = pointNum * 10)
+  for (n in 1:samNum)
+    proInter[n, ] <- approx(rtRange[n, ], profiles[n, ], interX, yleft = NA, yright = NA)$y
+  corM <- cor(t(proInter))
+  olM <- matrix(0, samNum, samNum)
+  for (i in 1:samNum)
+    for (j in i:samNum){
+      olM[i, j] <- sum(pmin(proInter[i, ], proInter[j, ])) / min(sum(proInter[i, ]), sum(proInter[j, ]))
+      olM[j, i] <- olM[i, j]
+    }
+
+  return(list(cor = mean(corM), ol = mean(olM)))
+
+}
+
+compCV <- function(XCMSresFilled, ncGTWresFilled){
+  groupNum <- dim(XCMSresFilled@groups)[1]
+  sampleNum <- max(XCMSresFilled@peaks[, 'sample'])
+
+  ncGTWpeaks <- matrix(0, groupNum, sampleNum)
+  XCMSpeaks <- matrix(0, groupNum, sampleNum)
+
+  ncGTWcv <- matrix(0, groupNum, 1)
+  XCMScv <- matrix(0, groupNum, 1)
+
+  for (n in 1:groupNum)
+  {
+    ncGTWgroupPeaks <- ncGTWresFilled@peaks[ncGTWresFilled@groupidx[[n]], ]
+    XCMSgroupPeaks <- XCMSresFilled@peaks[XCMSresFilled@groupidx[[n]], ]
+
+    ncGTWonePeak <- matrix(0, sampleNum, dim(ncGTWresFilled@peaks)[2])
+    colnames(ncGTWonePeak) <- colnames(ncGTWgroupPeaks)
+    XCMSonePeak <- matrix(0, sampleNum, dim(XCMSresFilled@peaks)[2])
+    colnames(XCMSonePeak) <- colnames(XCMSgroupPeaks)
+
+    for (m in 1:sampleNum)
+    {
+      ncGTWpeakInd <- which(ncGTWgroupPeaks[, 'sample'] == m)
+      ncGTWpeakInd <- ncGTWpeakInd[which.max(ncGTWgroupPeaks[ncGTWpeakInd, 'into'])]
+      ncGTWonePeak[m, ] <- ncGTWgroupPeaks[ncGTWpeakInd, ]
+
+      XCMSpeakInd <- which(XCMSgroupPeaks[, 'sample'] == m)
+      XCMSpeakInd <- XCMSpeakInd[which.max(XCMSgroupPeaks[XCMSpeakInd, 'into'])]
+      XCMSonePeak[m, ] <- XCMSgroupPeaks[XCMSpeakInd, ]
+    }
+    ncGTWpeaks[n, ] <- ncGTWonePeak[ , 'into']
+    XCMSpeaks[n, ] <- XCMSonePeak[ , 'into']
+
+    ncGTWcv[n] <- sd(ncGTWpeaks[n, ])/mean(ncGTWpeaks[n, ])
+    XCMScv[n] <- sd(XCMSpeaks[n, ])/mean(XCMSpeaks[n, ])
+  }
+  return(list(ncGTWcv = ncGTWcv, XCMScv = XCMScv))
+}
