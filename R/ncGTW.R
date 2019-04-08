@@ -13,10 +13,10 @@ ncGTW <- function(ncGTWinput, xcmsLargeWin, parSamp = 10, bpParam = bpparam(), n
   ncGTWparam$mir <- mir
 
 
-  maxStpRat <- if (is.null(ncGTWparam$maxStpRat)) 0.6 else ncGTWparam$maxStpRat
-  ncGTWparam$maxStpRat <- ncGTWparam
+  stpRat <- if (is.null(ncGTWparam$stpRat)) 0.6 else ncGTWparam$stpRat
+  ncGTWparam$stpRat <- stpRat
   maxStp <- if (is.null(ncGTWparam$maxStp)) round(dim(ncGTWinput$rtRaw)[2] %/%
-                                                    downSample * maxStpRat) else ncGTWparam$maxStp
+                                                    downSample * stpRat) else ncGTWparam$maxStp
   ncGTWparam$maxStp <- maxStp
   rangeThre <- if (is.null(ncGTWparam$rangeThre)) 1 else ncGTWparam$rangeThre
   ncGTWparam$rangeThre <- rangeThre
@@ -348,9 +348,7 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
     cut2 <- graphCut(gtwInfo2$ss, gtwInfo2$ee)
 
     #        if n == par_sect
-    #fprintf('%-80s%20s\n', ...
-    #        sprintf('Solved the 2nd maximum flow, section %d of %d.', n, par_sect), datestr(datetime()));
-    #        end
+    cat(format(Sys.time()), 'Solved the 2st maximum flow, section', n, 'of', parSect, '\n')
 
     path2 <- label2path(cut2, gtwInfo2)
     tempPath[[smo]] <- path2
