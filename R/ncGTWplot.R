@@ -19,9 +19,9 @@ plotGroup <- function(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[
   groupInd <- ncGTWinput$groupInfo['index']
   tit <- paste("Extracted Ion Chromatogram:", mzmed, "m/z")
   if (ind){
-    subt <- paste0("Group ", groupInd, " (", ind, ")", "   Color: Red -> Purple -> Green")
+    subt <- paste0("Group ", groupInd, " (", ind, ")", "   Color: Green -> Purple -> Red")
   } else{
-    subt <- paste0("Group ", groupInd,"   Color: Red -> Purple -> Green")
+    subt <- paste0("Group ", groupInd,"   Color: Green -> Purple -> Red")
   }
 
   if (show){

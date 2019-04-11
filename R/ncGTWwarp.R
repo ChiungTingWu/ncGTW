@@ -124,18 +124,27 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
 
   XCMSPeaks <- cbind(peaks[groupidx[[groupInd]], ], peakInd = groupidx[[groupInd]])
 # XCMSPeaks <- XCMSPeaks[!duplicated(XCMSPeaks[,c('rt', 'rtmax', 'rtmin')]), ]
-  for (n in seq(dim(XCMSPeaks)[1], 2, -1)){
-    XCMSSamPeaks <- XCMSPeaks[(1:(n-1))[
-      XCMSPeaks[1:(n - 1) , 'sample'] == XCMSPeaks[n, 'sample']], , drop = FALSE]
+  rmInd <- matrix(TRUE, dim(XCMSPeaks)[1], 1)
+  for (n in 1:(dim(XCMSPeaks)[1] - 1)){
+    XCMSSamPeaks <- XCMSPeaks[XCMSPeaks[ , 'sample'] == XCMSPeaks[n, 'sample'], , drop = FALSE]
+    tempRmInd <- rmInd[XCMSPeaks[ , 'sample'] == XCMSPeaks[n, 'sample'], , drop = FALSE]
+    if (abs(XCMSPeaks[n, 'rtmax'] - XCMSPeaks[n, 'rtmin'] > 15)){
+      rmInd[n] <- FALSE
+    } else{
     if (!isEmpty(XCMSSamPeaks))
       for (m in 1:dim(XCMSSamPeaks)[1]){
         if (abs(XCMSPeaks[n, 'mz'] - XCMSSamPeaks[m, 'mz']) / XCMSPeaks[n, 1] < ppm/1000000 &&
-          abs(XCMSPeaks[n, 'rt'] - XCMSSamPeaks[m, 'rt']) < 1){
-          XCMSPeaks <- XCMSPeaks[-n, ]
-          break
+          abs(XCMSPeaks[n, 'rt'] - XCMSSamPeaks[m, 'rt']) < 5){
+          if (XCMSPeaks[n, 'maxo'] < XCMSSamPeaks[m, 'maxo'] && tempRmInd[m] == TRUE){
+            rmInd[n] <- FALSE
+            break
+          }
         }
+
       }
+    }
   }
+  XCMSPeaks <- XCMSPeaks[rmInd, ]
 
   sampleCount <- table(XCMSPeaks[ , 'sample'])
   groupNum <- max(sampleCount)
@@ -147,7 +156,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
         'scanmin_ncGTW', 'rtmin_ncGTW', 'scanmax_XCMS', 'scanmax_ncGTW', 'rtmax_ncGTW', 'sample')
   path <- pathCombine(parPath, path2, parInd)
 
-  warpOrder <- sort(XCMSPeaks[ , 'rt'], index.return = TRUE)$ix
+  warpOrder <- sort(XCMSPeaks[ , 'maxo'], index.return = TRUE, decreasing = TRUE)$ix
   for (nn in 1:dim(ncGTWpeaks)[1]){
     n <- warpOrder[nn]
     samInd <- XCMSPeaks[n, 'sample']
@@ -200,21 +209,44 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     }
     groupSam <- if (maxRange == 0) groupSam[1] else maxInd
   } else groupSam <- groupSam[1]
-  kmeansncGTW <- kmeans(peakScanRt[ , c('rt_ncGTW', 'rtmin_ncGTW', 'rtmax_ncGTW')],
-                         peakScanRt[peakScanRt[ , 'sample'] == groupSam,
-                                    c('rt_ncGTW', 'rtmin_ncGTW', 'rtmax_ncGTW'), drop = FALSE])
+
+#  if (groupNum > 4)
+#    groupNum <- 4
+
+  kcenter <- peakScanRt[peakScanRt[ , 'sample'] == groupSam,
+                        c('rt_ncGTW', 'rtmin_ncGTW', 'rtmax_ncGTW'), drop = FALSE]
+  intOrder <- sort(XCMSPeaks[peakScanRt[ , 'sample'] == groupSam, 'maxo'],
+                    index.return = TRUE, decreasing = TRUE)$ix[1:groupNum]
+  kcenter <- kcenter[intOrder, , drop = FALSE]
+
+
+  kmeansncGTW <- kmeans(peakScanRt[ , c('rt_ncGTW', 'rtmin_ncGTW', 'rtmax_ncGTW')], kcenter)
 
   peakGroup <- vector('list', groupNum)
-  tempPeaks <- matrix(NA, max(peaks[ , 'sample']), dim(peakScanRt)[2] + 1)
-  colnames(tempPeaks) <- c(colnames(peakScanRt), 'detect')
+  tempPeaks <- matrix(NA, max(peaks[ , 'sample']), dim(peakScanRt)[2] + 2)
+  colnames(tempPeaks) <- c(colnames(peakScanRt), 'detect', 'maxo')
   colnames(tempPeaks)[c(1, 4, 7)] <- c('scan_Raw', 'scanmin_Raw', 'scanmax_Raw')
   for (n in 1:groupNum)
     peakGroup[[n]] <- tempPeaks
 
   for (n in 1:dim(peakScanRt)[1])
-    peakGroup[[kmeansncGTW$cluster[n]]][peakScanRt[n, 'sample'], ] <-
-      c(peakScanRt[n, ], 1)
+    if (is.na(peakGroup[[kmeansncGTW$cluster[n]]][peakScanRt[n, 'sample'], 1])){
+      peakGroup[[kmeansncGTW$cluster[n]]][peakScanRt[n, 'sample'], ] <-
+        c(peakScanRt[n, ], 1, XCMSPeaks[n, 'maxo'])
+    } else{
+      if (XCMSPeaks[n, 'maxo'] > peakGroup[[kmeansncGTW$cluster[n]]][peakScanRt[n, 'sample'], 'maxo'])
+        peakGroup[[kmeansncGTW$cluster[n]]][peakScanRt[n, 'sample'], ] <-
+          c(peakScanRt[n, ], 1, XCMSPeaks[n, 'maxo'])
+    }
 
+  rmInd <- matrix(TRUE, length(peakGroup), 1)
+  for (n in 1:groupNum){
+    tempPeaks <- peakGroup[[n]]
+    if (sum(is.na(tempPeaks[,1])) > dim(tempPeaks)[1] * (3 / 4) )
+      rmInd[n] <- FALSE
+  }
+  peakGroup <- peakGroup[rmInd]
+  groupNum <- length(peakGroup)
   peakGroupMed <- tempPeaks[1:groupNum, , drop = FALSE]
   for (n in 1:groupNum)
     for (m in 1:dim(peakGroupMed)[2])
@@ -255,6 +287,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
       tempShift <- tempShift + 5
     }
   }
+
 
   for (n in 1:groupNum){
     tempPeaks <- peakGroup[[n]]
@@ -390,12 +423,14 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
   for (n in 1:dim(rtncGTWsub)[1])
     for (m in 2:dim(rtncGTWsub)[2])
       if (rtncGTWsub[n, m] < rtncGTWsub[n, m - 1]){
-        warning('Adjusted rt of sample ', n, ' is not increasing...')
+#        warning('Adjusted rt of sample ', n, ' is not increasing...')
         pl <- m - 1
         pr <- m
         while (rtncGTWsub[n, pl] > rtncGTWsub[n, pr]){
-          pl <- pl - 1
-          pr <- pr - 1
+          if (pl > 1)
+            pl <- pl - 1
+          if (pr < dim(rtncGTWsub)[2])
+            pr <- pr + 1
         }
         rtncGTWsub[n, pl:pr] <- approx(c(pl, pr), rtncGTWsub[n, c(pl, pl)], n = length(pl:pr))$y
       }
