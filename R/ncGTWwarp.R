@@ -123,12 +123,12 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
   downSample <- ncGTWoutput$downSample
 
   XCMSPeaks <- cbind(peaks[groupidx[[groupInd]], ], peakInd = groupidx[[groupInd]])
-# XCMSPeaks <- XCMSPeaks[!duplicated(XCMSPeaks[,c('rt', 'rtmax', 'rtmin')]), ]
+  XCMSPeaks <- XCMSPeaks[!duplicated(XCMSPeaks[,c('rt', 'rtmax', 'rtmin')]), ]
   rmInd <- matrix(TRUE, dim(XCMSPeaks)[1], 1)
   for (n in 1:(dim(XCMSPeaks)[1] - 1)){
     XCMSSamPeaks <- XCMSPeaks[XCMSPeaks[ , 'sample'] == XCMSPeaks[n, 'sample'], , drop = FALSE]
     tempRmInd <- rmInd[XCMSPeaks[ , 'sample'] == XCMSPeaks[n, 'sample'], , drop = FALSE]
-    if (abs(XCMSPeaks[n, 'rtmax'] - XCMSPeaks[n, 'rtmin'] > 15)){
+    if (abs(XCMSPeaks[n, 'rtmax'] - XCMSPeaks[n, 'rtmin']) > 15){
       rmInd[n] <- FALSE
     } else{
     if (!isEmpty(XCMSSamPeaks))
