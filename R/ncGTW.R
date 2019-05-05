@@ -421,3 +421,6 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
 
 }
 
+#' @useDynLib ncGTW
+#' @importFrom Rcpp sourceCpp
+NULL
