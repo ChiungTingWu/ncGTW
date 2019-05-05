@@ -120,6 +120,26 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange, sampleInd, path2
 
 }
 
+
+#' Compute average pairwise correlation and overlapping area
+#'
+#' This function calculates the p-value of each peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
+
 meanCorOl <- function(ncGTWinput, sampleRt){
   samNum <- dim(ncGTWinput$rtRaw)[1]
   pointNum <- dim(ncGTWinput$rtRaw)[2]
@@ -144,6 +164,26 @@ meanCorOl <- function(ncGTWinput, sampleRt){
   return(list(cor = mean(corM), ol = mean(olM)))
 
 }
+
+
+#' Compare CV
+#'
+#' This function calculates the p-value of each peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
 
 compCV <- function(XCMSresFilled, ncGTWresFilled){
   groupNum <- dim(XCMSresFilled@groups)[1]

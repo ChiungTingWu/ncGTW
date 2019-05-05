@@ -1,3 +1,87 @@
+#' Edited XCMS fillPeaksChromPar for feature-wise warping functions
+#'
+#' This function calculates the p-value of each peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
+
+fillPeaksChromPar <- function(arg) {
+
+  require(xcms)
+  require(ncGTW)
+  print('This is edited from XCMS (fillPeaksChromPar).....')
+
+  params <- arg$params
+  myID <- arg$id
+  cat(arg$file, "\n")
+
+  prof <- params$prof
+  rtcor <- params$rtcor
+  peakrange <- params$peakrange
+  expand.mz <- params$expand.mz
+  expand.rt <- params$expand.rt
+  gvals <- params$gvals$gvals
+
+  lcraw <- xcmsRaw(arg$file, profmethod=params$prof$method, profstep = 0)
+
+  if (length(params$dataCorrection) > 1) {
+    ## Note: dataCorrection (as set in the xcmsSet function) is either
+    ## 1 for all or for none.
+    if (any(params$dataCorrection == 1))
+      lcraw <- stitch(lcraw, AutoLockMass(lcraw))
+  }
+
+  if (exists("params$polarity") && length(params$polarity) >0) {
+    if (length(params$polarity) > 0) {
+      ## Retain wanted polarity only
+      lcraws <- split(lcraw, lcraw@polarity, DROP=TRUE)
+      lcraw <- lcraws[[params$polarity]]
+    }
+  }
+
+  #  if (length(prof) > 2)
+  #    lcraw@profparam <- prof[seq(3, length(prof))]
+  #    if (length(rtcor) == length(lcraw@scantime) ) {
+  #  lcraw@scantime <- rtcor
+  if (!is.list(rtcor))
+    rtcor <- list(rtcor)
+  lcraw@profparam <- rtcor
+
+  #    } else {
+  #        warning("(corrected) retention time vector length mismatch for ", basename(arg$file))
+  #   }
+
+
+  ## Expanding the peakrange
+  incrMz <- (peakrange[, "mzmax"] - peakrange[, "mzmin"]) / 2 * (expand.mz - 1)
+  peakrange[, "mzmax"] <- peakrange[, "mzmax"] + incrMz
+  peakrange[, "mzmin"] <- peakrange[, "mzmin"] - incrMz
+  incrRt <- (peakrange[, "rtmax"] - peakrange[, "rtmin"]) / 2 * (expand.rt - 1)
+  peakrange[, "rtmax"] <- peakrange[, "rtmax"] + incrRt
+  peakrange[, "rtmin"] <- peakrange[, "rtmin"] - incrRt
+
+  naidx <- which(is.na(gvals[,myID]))
+
+  newpeaks <- getPeaksncGTW(lcraw, peakrange[naidx,,drop=FALSE], step = prof$step, naidx)
+
+
+
+  list(myID=myID, newpeaks=cbind(newpeaks, sample=myID))
+}
+
+
 getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
   require(xcms)
   print('ncGTW fillpeaks\n')
@@ -105,66 +189,4 @@ getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
 }
 
 
-fillPeaksChromPar <- function(arg) {
 
-  require(xcms)
-  require(ncGTW)
-  print('This is edited from XCMS (fillPeaksChromPar).....')
-
-  params <- arg$params
-  myID <- arg$id
-  cat(arg$file, "\n")
-
-  prof <- params$prof
-  rtcor <- params$rtcor
-  peakrange <- params$peakrange
-  expand.mz <- params$expand.mz
-  expand.rt <- params$expand.rt
-  gvals <- params$gvals$gvals
-
-  lcraw <- xcmsRaw(arg$file, profmethod=params$prof$method, profstep = 0)
-
-  if (length(params$dataCorrection) > 1) {
-    ## Note: dataCorrection (as set in the xcmsSet function) is either
-    ## 1 for all or for none.
-    if (any(params$dataCorrection == 1))
-      lcraw <- stitch(lcraw, AutoLockMass(lcraw))
-  }
-
-  if (exists("params$polarity") && length(params$polarity) >0) {
-    if (length(params$polarity) > 0) {
-      ## Retain wanted polarity only
-      lcraws <- split(lcraw, lcraw@polarity, DROP=TRUE)
-      lcraw <- lcraws[[params$polarity]]
-    }
-  }
-
-#  if (length(prof) > 2)
-#    lcraw@profparam <- prof[seq(3, length(prof))]
-  #    if (length(rtcor) == length(lcraw@scantime) ) {
-#  lcraw@scantime <- rtcor
-  if (!is.list(rtcor))
-    rtcor <- list(rtcor)
-  lcraw@profparam <- rtcor
-
-  #    } else {
-  #        warning("(corrected) retention time vector length mismatch for ", basename(arg$file))
-  #   }
-
-
-  ## Expanding the peakrange
-  incrMz <- (peakrange[, "mzmax"] - peakrange[, "mzmin"]) / 2 * (expand.mz - 1)
-  peakrange[, "mzmax"] <- peakrange[, "mzmax"] + incrMz
-  peakrange[, "mzmin"] <- peakrange[, "mzmin"] - incrMz
-  incrRt <- (peakrange[, "rtmax"] - peakrange[, "rtmin"]) / 2 * (expand.rt - 1)
-  peakrange[, "rtmax"] <- peakrange[, "rtmax"] + incrRt
-  peakrange[, "rtmin"] <- peakrange[, "rtmin"] - incrRt
-
-  naidx <- which(is.na(gvals[,myID]))
-
-  newpeaks <- getPeaksncGTW(lcraw, peakrange[naidx,,drop=FALSE], step = prof$step, naidx)
-
-
-
-  list(myID=myID, newpeaks=cbind(newpeaks, sample=myID))
-}

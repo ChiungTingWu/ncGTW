@@ -1,111 +1,21 @@
-label2path <- function(cut, gtwInfo){
-  #label2path4Aosokin Convert label of src and sink to path in primal graph
-  # For the graph representation of Aosokin's codes
-  # Src and sink edges do not use explicit node names, but other edges do
-
-  # cs = find(labels==0);
-  ct <- which(cut == 1)
-
-  nEdgeGrid <- gtwInfo$nEdgeGrid
-  nNodeGrid <- gtwInfo$nNodeGrid
-  nPix <- gtwInfo$nPix
-  pEdgeSS <- gtwInfo$pEdgeSS
-  pEdgeEE <- gtwInfo$pEdgeEE
-  dEdgeIntSS <- gtwInfo$dEdgeIntSS
-  ssTmpPos <- gtwInfo$ssTmpPos
-  ss <- gtwInfo$ss
-  ee <- gtwInfo$ee
-
-  # cut for within grid
-  # not suitable do this pixel by pixel due to the spatial edge
-  dtmp <- matrix(0, dim(ee)[1], 2)
-  ia <- matrix(is.element(ee[ ,1:2], ct), dim(ee)[1], 2)
-  dtmp[ia] <- 1
-  isCutEE <- dtmp[ ,1] != dtmp[ , 2]
-
-  # cut to mapping pattern in primal graph
-  resPath <- vector('list', nPix)
-  for (nn in 1:nPix){
-    # cuts within grid
-    idx1 <- nEdgeGrid * (nn - 1) + 1
-    idx2 <- nEdgeGrid * nn
-    cutNow <- isCutEE[idx1:idx2]
-    resEE <- pEdgeEE[cutNow, ]
-
-    # src and sink cuts
-    idx1 <- nNodeGrid * (nn - 1) + 1
-    idx2 <- nNodeGrid * nn
-    s0 <- ss[idx1:idx2, ]
-    b0 <- cut[idx1:idx2]
-
-    # idxSrcCut = find(s0(:,1)>0 & b0==1);  % nodes that cuts
-    idxSrcCut <- which(ssTmpPos[ , 1] != (nPix * nPix + 1) & b0 == TRUE)
-    ia <- is.element(dEdgeIntSS[ , 2], idxSrcCut)  # get corresponding edges, src -> node
-    resSrc <- pEdgeSS[ia, ]  # the primal edges
-
-    # idxSinkCut = find(s0(:,2)>0 & b0==0);
-    idxSinkCut <- which(ssTmpPos[ , 2] != nPix * nPix + 1 & b0 == 0)
-    ia <- is.element(dEdgeIntSS[ , 1], idxSinkCut)  # node -> sink
-    resSink <- pEdgeSS[ia, ]
-
-    tempPath <- rbind(resEE, resSrc, resSink)
-    sorted <- sort.int(tempPath[ , 1], index.return = TRUE)
-
-    resPath[[nn]] <- tempPath[sorted$ix, ]
-  }
-  return(resPath)
-}
-
-warpCurve <- function(curve, path){
-
-  nTps <- length(curve)
-  warped <- matrix(0, 1, nTps)
-  p0 <- path[ , 1:2]
-  idxValid <- (p0[ , 1] >= 1) & (p0[ , 1] <= nTps) & (p0[ , 2] >= 1) & (p0[ , 2] <= nTps)
-  p0 <- p0[idxValid, ]
-
-  for (tt in 1:dim(p0)[1]){
-    pRef <- p0[tt, 2]
-    pTst <- p0[tt, 1]
-    warped[pTst] <- max(warped[pTst], curve[pRef])
-  }
-  return(warped)
-}
-
-
-pathCombine <- function(parPath, path2, parInd){
-  dataNum <- max(parInd)
-  temp2path <- vector('list', dataNum)
-
-  for (tempInd in 1:dataNum){
-    ind <- which(parInd == tempInd, TRUE)
-    tempPath1 <- parPath[[ind[2]]][[ind[1]]]
-    tempPath2 <- path2[[ind[2]]]
-    newPath <- c(0,0)
-
-    for (pixInd in 2:dim(tempPath1)[1]){
-      tempPix <- tempPath1[pixInd, 1]
-      tempPix2 <- tempPath2[which(tempPath2[ , 2] == tempPix)]
-
-      tempM <- matrix(0, length(tempPix2), 2)
-      tempM[ , 1] <- tempPix2
-      tempM[ , 2] <- tempPath1[pixInd, 2]
-      newPath <- rbind(newPath, tempM)
-    }
-
-    for (pixInd in seq(dim(newPath)[1], 2, -1)){
-      if ((newPath[pixInd - 1, 1] > newPath[pixInd, 1]) ||
-          (newPath[pixInd - 1, 2] > newPath[pixInd, 2])){
-        newPath[pixInd, ] <- 0
-      }
-    }
-
-    newPath <- cbind(newPath, rbind(newPath[2:dim(newPath)[1], ], tempPath2[dim(tempPath2)[1], 3:4]))
-    temp2path[[tempInd]] <- newPath
-  }
-  return(temp2path)
-}
-
+#' Adjust retention time
+#'
+#' This function calculates the p-value of each peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
 
 adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
   peaks <- xcmsLargeWin@peaks
@@ -131,17 +41,17 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     if (abs(XCMSPeaks[n, 'rtmax'] - XCMSPeaks[n, 'rtmin']) > 15){
       rmInd[n] <- FALSE
     } else{
-    if (!isEmpty(XCMSSamPeaks))
-      for (m in 1:dim(XCMSSamPeaks)[1]){
-        if (abs(XCMSPeaks[n, 'mz'] - XCMSSamPeaks[m, 'mz']) / XCMSPeaks[n, 1] < ppm/1000000 &&
-          abs(XCMSPeaks[n, 'rt'] - XCMSSamPeaks[m, 'rt']) < 5){
-          if (XCMSPeaks[n, 'maxo'] < XCMSSamPeaks[m, 'maxo'] && tempRmInd[m] == TRUE){
-            rmInd[n] <- FALSE
-            break
+      if (!isEmpty(XCMSSamPeaks))
+        for (m in 1:dim(XCMSSamPeaks)[1]){
+          if (abs(XCMSPeaks[n, 'mz'] - XCMSSamPeaks[m, 'mz']) / XCMSPeaks[n, 1] < ppm/1000000 &&
+              abs(XCMSPeaks[n, 'rt'] - XCMSSamPeaks[m, 'rt']) < 5){
+            if (XCMSPeaks[n, 'maxo'] < XCMSSamPeaks[m, 'maxo'] && tempRmInd[m] == TRUE){
+              rmInd[n] <- FALSE
+              break
+            }
           }
-        }
 
-      }
+        }
     }
   }
   XCMSPeaks <- XCMSPeaks[rmInd, ]
@@ -153,7 +63,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
   ncGTWpeaks[ , c('rt', 'rtmin', 'rtmax')] <- 0
   peakScanRt <- matrix(0, dim(ncGTWpeaks)[1], 10)
   colnames(peakScanRt) <- c('scan_XCMS', 'scan_ncGTW', 'rt_ncGTW', 'scanmin_XCMS',
-        'scanmin_ncGTW', 'rtmin_ncGTW', 'scanmax_XCMS', 'scanmax_ncGTW', 'rtmax_ncGTW', 'sample')
+                            'scanmin_ncGTW', 'rtmin_ncGTW', 'scanmax_XCMS', 'scanmax_ncGTW', 'rtmax_ncGTW', 'sample')
   path <- pathCombine(parPath, path2, parInd)
 
   warpOrder <- sort(XCMSPeaks[ , 'maxo'], index.return = TRUE, decreasing = TRUE)$ix
@@ -175,8 +85,8 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
         if (XCMSPeaks[n, 'rt'] > XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rt']){
           peakRtDif <- min(XCMSPeaks[n, 'rt'] - XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rt'],
                            XCMSPeaks[n, 'rt'] - XCMSPeaks[n, 'rtmin'] +
-                           XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rtmax'] -
-                           XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rt'])
+                             XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rtmax'] -
+                             XCMSPeaks[inSamPeaks[m, 'peakInd'], 'rt'])
           if (peakScanRt[n, 'rt_ncGTW'] - inSamPeaks[m, 'rt_ncGTW'] < peakRtDif){
             peakScanRt[n, 'scan_ncGTW'] <- rt2scan(inSamPeaks[m, 'rt_ncGTW'] + peakRtDif, samRtXCMS)
             peakScanRt[n, 'rt_ncGTW'] <- samRtRaw[peakScanRt[n, 'scan_ncGTW']]
@@ -210,13 +120,13 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     groupSam <- if (maxRange == 0) groupSam[1] else maxInd
   } else groupSam <- groupSam[1]
 
-#  if (groupNum > 4)
-#    groupNum <- 4
+  #  if (groupNum > 4)
+  #    groupNum <- 4
 
   kcenter <- peakScanRt[peakScanRt[ , 'sample'] == groupSam,
                         c('rt_ncGTW', 'rtmin_ncGTW', 'rtmax_ncGTW'), drop = FALSE]
   intOrder <- sort(XCMSPeaks[peakScanRt[ , 'sample'] == groupSam, 'maxo'],
-                    index.return = TRUE, decreasing = TRUE)$ix[1:groupNum]
+                   index.return = TRUE, decreasing = TRUE)$ix[1:groupNum]
   kcenter <- kcenter[intOrder, , drop = FALSE]
 
 
@@ -257,7 +167,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     for (m in 1:dim(tempPeaks)[1])
       if (is.na(tempPeaks[m, 1])){
         tempPeaks[m , c('scan_ncGTW', 'rt_ncGTW', 'scanmin_ncGTW',
-                       'rtmin_ncGTW', 'scanmax_ncGTW', 'rtmax_ncGTW')] <-
+                        'rtmin_ncGTW', 'scanmax_ncGTW', 'rtmax_ncGTW')] <-
           peakGroupMed[n, c('scan_ncGTW', 'rt_ncGTW', 'scanmin_ncGTW',
                             'rtmin_ncGTW', 'scanmax_ncGTW', 'rtmax_ncGTW')]
         samPath <- path[[m]]
@@ -423,7 +333,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
   for (n in 1:dim(rtncGTWsub)[1])
     for (m in 2:dim(rtncGTWsub)[2])
       if (rtncGTWsub[n, m] < rtncGTWsub[n, m - 1]){
-#        warning('Adjusted rt of sample ', n, ' is not increasing...')
+        #        warning('Adjusted rt of sample ', n, ' is not increasing...')
         pl <- m - 1
         pr <- m
         while (rtncGTWsub[n, pl] > rtncGTWsub[n, pr]){
@@ -440,3 +350,114 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
 
   return(list(rtncGTW = rtncGTW, peaks = peaks))
 }
+
+label2path <- function(cut, gtwInfo){
+  #label2path4Aosokin Convert label of src and sink to path in primal graph
+  # For the graph representation of Aosokin's codes
+  # Src and sink edges do not use explicit node names, but other edges do
+
+  # cs = find(labels==0);
+  ct <- which(cut == 1)
+
+  nEdgeGrid <- gtwInfo$nEdgeGrid
+  nNodeGrid <- gtwInfo$nNodeGrid
+  nPix <- gtwInfo$nPix
+  pEdgeSS <- gtwInfo$pEdgeSS
+  pEdgeEE <- gtwInfo$pEdgeEE
+  dEdgeIntSS <- gtwInfo$dEdgeIntSS
+  ssTmpPos <- gtwInfo$ssTmpPos
+  ss <- gtwInfo$ss
+  ee <- gtwInfo$ee
+
+  # cut for within grid
+  # not suitable do this pixel by pixel due to the spatial edge
+  dtmp <- matrix(0, dim(ee)[1], 2)
+  ia <- matrix(is.element(ee[ ,1:2], ct), dim(ee)[1], 2)
+  dtmp[ia] <- 1
+  isCutEE <- dtmp[ ,1] != dtmp[ , 2]
+
+  # cut to mapping pattern in primal graph
+  resPath <- vector('list', nPix)
+  for (nn in 1:nPix){
+    # cuts within grid
+    idx1 <- nEdgeGrid * (nn - 1) + 1
+    idx2 <- nEdgeGrid * nn
+    cutNow <- isCutEE[idx1:idx2]
+    resEE <- pEdgeEE[cutNow, ]
+
+    # src and sink cuts
+    idx1 <- nNodeGrid * (nn - 1) + 1
+    idx2 <- nNodeGrid * nn
+    s0 <- ss[idx1:idx2, ]
+    b0 <- cut[idx1:idx2]
+
+    # idxSrcCut = find(s0(:,1)>0 & b0==1);  % nodes that cuts
+    idxSrcCut <- which(ssTmpPos[ , 1] != (nPix * nPix + 1) & b0 == TRUE)
+    ia <- is.element(dEdgeIntSS[ , 2], idxSrcCut)  # get corresponding edges, src -> node
+    resSrc <- pEdgeSS[ia, ]  # the primal edges
+
+    # idxSinkCut = find(s0(:,2)>0 & b0==0);
+    idxSinkCut <- which(ssTmpPos[ , 2] != nPix * nPix + 1 & b0 == 0)
+    ia <- is.element(dEdgeIntSS[ , 1], idxSinkCut)  # node -> sink
+    resSink <- pEdgeSS[ia, ]
+
+    tempPath <- rbind(resEE, resSrc, resSink)
+    sorted <- sort.int(tempPath[ , 1], index.return = TRUE)
+
+    resPath[[nn]] <- tempPath[sorted$ix, ]
+  }
+  return(resPath)
+}
+
+warpCurve <- function(curve, path){
+
+  nTps <- length(curve)
+  warped <- matrix(0, 1, nTps)
+  p0 <- path[ , 1:2]
+  idxValid <- (p0[ , 1] >= 1) & (p0[ , 1] <= nTps) & (p0[ , 2] >= 1) & (p0[ , 2] <= nTps)
+  p0 <- p0[idxValid, ]
+
+  for (tt in 1:dim(p0)[1]){
+    pRef <- p0[tt, 2]
+    pTst <- p0[tt, 1]
+    warped[pTst] <- max(warped[pTst], curve[pRef])
+  }
+  return(warped)
+}
+
+
+pathCombine <- function(parPath, path2, parInd){
+  dataNum <- max(parInd)
+  temp2path <- vector('list', dataNum)
+
+  for (tempInd in 1:dataNum){
+    ind <- which(parInd == tempInd, TRUE)
+    tempPath1 <- parPath[[ind[2]]][[ind[1]]]
+    tempPath2 <- path2[[ind[2]]]
+    newPath <- c(0,0)
+
+    for (pixInd in 2:dim(tempPath1)[1]){
+      tempPix <- tempPath1[pixInd, 1]
+      tempPix2 <- tempPath2[which(tempPath2[ , 2] == tempPix)]
+
+      tempM <- matrix(0, length(tempPix2), 2)
+      tempM[ , 1] <- tempPix2
+      tempM[ , 2] <- tempPath1[pixInd, 2]
+      newPath <- rbind(newPath, tempM)
+    }
+
+    for (pixInd in seq(dim(newPath)[1], 2, -1)){
+      if ((newPath[pixInd - 1, 1] > newPath[pixInd, 1]) ||
+          (newPath[pixInd - 1, 2] > newPath[pixInd, 2])){
+        newPath[pixInd, ] <- 0
+      }
+    }
+
+    newPath <- cbind(newPath, rbind(newPath[2:dim(newPath)[1], ], tempPath2[dim(tempPath2)[1], 3:4]))
+    temp2path[[tempInd]] <- newPath
+  }
+  return(temp2path)
+}
+
+
+

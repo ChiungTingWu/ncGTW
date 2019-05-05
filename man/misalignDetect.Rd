@@ -17,9 +17,11 @@ object with a smaller bw, usually the resolution of the retension time.}
 \item{ppm}{Should set as same as the one in the input
 \code{\link[xcms::xcmsSet-class]{xcmsSet}} object.}
 
-\item{qThre}{The threshould of the p-value after multiple test correction.}
+\item{qThre}{The threshould of the p-value after multiple test correction.
+The default is 0.05.}
 
-\item{maxRtWin}{The threshould of the maximum retension time range.}
+\item{maxRtWin}{The threshould of the maximum retension time range. This is
+for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
 A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
@@ -29,6 +31,10 @@ detected misaligned peak groups.
 This function detects the misaligned peak groups with two objects of class
 \code{\link[xcms::xcmsSet-class]{xcmsSet}} with two different values of "bw"
 parameter in \code{\link[xcms]{group}}.
+}
+\details{
+This function includes two major steps to determine a peak group is
+misaligned or not.
 }
 \examples{
 add(1, 1)
