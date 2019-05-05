@@ -1,42 +1,56 @@
-peakGroupPvalOrder <- function(peakIdx, sampleNum) {
-    peakIdx <- unique(sort(peakIdx))
-    peakIdxDif <- peakIdx[length(peakIdx)] - peakIdx[1]
+#' Detect misaligned peak groups in xcmsSet object of XCMS
+#'
+#' This function detects the misaligned peak groups with two objects of class
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with two different values of "bw"
+#' parameter in \code{\link[xcms]{group}}.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @param ppm Should set as same as the one in the input
+#'     \code{\link[xcms::xcmsSet-class]{xcmsSet}} object.
+#' @param qThre The threshould of the p-value after multiple test correction.
+#'     The default is 0.05.
+#' @param maxRtWin The threshould of the maximum retension time range. This is
+#'     for filtering out some bad groups. The default is 50 (seconds).
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
 
-    hypValue <- 0
-    for (n in (length(peakIdx)-1) : peakIdxDif)
-    {
-        hypValue <- hypValue + (sampleNum - n) * choose(n-1, length(peakIdx)-2)
-    }
-    pVal <- hypValue / choose(sampleNum, length(peakIdx))
-    if (length(peakIdx) == 1){
-        pVal <- 1
-    }
-    return(pVal)
+misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
+                           maxRtWin = 50){
+    groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
+    excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
+    excluGroups <- excluInfo$excluGroups
+
+    rtWin <-  excluGroups[ , 'rtmax'] - excluGroups[ , 'rtmin']
+    return(excluGroups[rtWin < maxRtWin, ])
 }
 
 
-peakGroupPval <- function(peakIdx, sampleNum, testNum) {
-    peakIdx <- unique(sort(peakIdx))
-    peakIdxDif <- peakIdx[2:length(peakIdx)] - peakIdx[1:(length(peakIdx) - 1)]
-    testVal <- mean(peakIdxDif)
-
-    peakNum <- length(peakIdx)
-    nullVal <- vector('numeric', testNum)
-
-    for (n in 1:testNum){
-        nullIdx <- sort(sample(1:sampleNum, peakNum))
-        nullIdxDif <- nullIdx[2:length(nullIdx)] - nullIdx[1:(length(nullIdx) - 1)]
-        nullVal[n] <- mean(nullIdxDif)
-    }
-
-    pVal <- sum(nullVal <= testVal) / length(nullVal)
-
-    if (length(peakIdx) == 1){
-        pVal <- 1
-    }
-
-    return(pVal)
-}
+#' Calculate the p-values of each peak group
+#'
+#' This function calculates the p-value of each peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' detected misaligned peak groups.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+#' @export
 
 splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 
@@ -93,13 +107,13 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
         }
     }
 
-#    peakMore1Idx <- which(lapply(smallWinSampleidx, length) > 1)
+    #    peakMore1Idx <- which(lapply(smallWinSampleidx, length) > 1)
 
-#    tempPval <- pvalues[peakMore1Idx]
+    #    tempPval <- pvalues[peakMore1Idx]
     tempPval <- pvalues[pvalueIdx]
     tempQval <- p.adjust(tempPval, 'fdr')
     qvalues <- vector('integer', length(smallWinGroupidx)) + 1
-#    qvalues[peakMore1Idx] <- tempQval
+    #    qvalues[peakMore1Idx] <- tempQval
     qvalues[pvalueIdx] <- tempQval
 
     pqValues <- matrix(0, length(largeWinGroupidx), 2)
@@ -167,11 +181,61 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
     return(excluInfo)
 }
 
-misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05, maxRtWin = 50){
-    groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
-    excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
-    excluGroups <- excluInfo$excluGroups
 
-    rtWin <-  excluGroups[ , 'rtmax'] - excluGroups[ , 'rtmin']
-    return(excluGroups[rtWin < maxRtWin, ])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+peakGroupPvalOrder <- function(peakIdx, sampleNum) {
+    peakIdx <- unique(sort(peakIdx))
+    peakIdxDif <- peakIdx[length(peakIdx)] - peakIdx[1]
+
+    hypValue <- 0
+    for (n in (length(peakIdx)-1) : peakIdxDif)
+    {
+        hypValue <- hypValue + (sampleNum - n) * choose(n-1, length(peakIdx)-2)
+    }
+    pVal <- hypValue / choose(sampleNum, length(peakIdx))
+    if (length(peakIdx) == 1){
+        pVal <- 1
+    }
+    return(pVal)
 }
+
+
+peakGroupPval <- function(peakIdx, sampleNum, testNum) {
+    peakIdx <- unique(sort(peakIdx))
+    peakIdxDif <- peakIdx[2:length(peakIdx)] - peakIdx[1:(length(peakIdx) - 1)]
+    testVal <- mean(peakIdxDif)
+
+    peakNum <- length(peakIdx)
+    nullVal <- vector('numeric', testNum)
+
+    for (n in 1:testNum){
+        nullIdx <- sort(sample(1:sampleNum, peakNum))
+        nullIdxDif <- nullIdx[2:length(nullIdx)] - nullIdx[1:(length(nullIdx) - 1)]
+        nullVal[n] <- mean(nullIdxDif)
+    }
+
+    pVal <- sum(nullVal <= testVal) / length(nullVal)
+
+    if (length(peakIdx) == 1){
+        pVal <- 1
+    }
+
+    return(pVal)
+}
+
+
+
+
