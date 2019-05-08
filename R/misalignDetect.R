@@ -226,7 +226,7 @@ peakGroupPvalOrder <- function(peakIdx, sampleNum) {
         hypValue <- hypValue + (sampleNum - n) * choose(n-1, length(peakIdx)-2)
     }
     pVal <- hypValue / choose(sampleNum, length(peakIdx))
-    if (length(peakIdx) == 1){
+    if (length(peakIdx) == 1 | is.nan(pVal)){
         pVal <- 1
     }
     return(pVal)
