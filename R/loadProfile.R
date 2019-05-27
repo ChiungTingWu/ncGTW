@@ -21,10 +21,10 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
   groupNum <- dim(excluGroups)[1]
   fileNum <- length(filePaths)
 
-  mzRange <- excluGroups[,c('mzmin', 'mzmax')]
+  mzRange <- excluGroups[,c('mzmin', 'mzmax'), drop = FALSE]
   mzRange[,'mzmin'] <- mzRange[,'mzmin'] - mzAdd
   mzRange[,'mzmax'] <- mzRange[,'mzmax'] + mzAdd
-  rtRange <- excluGroups[,c('rtmin', 'rtmax')]
+  rtRange <- excluGroups[,c('rtmin', 'rtmax'), drop = FALSE]
   rtRange[,'rtmin'] <- rtRange[,'rtmin'] - rtAdd
   rtRange[,'rtmax'] <- rtRange[,'rtmax'] + rtAdd
 
@@ -48,8 +48,8 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
   }
 
   maxMinMat <- matrix(0, groupNum, 2)
-  maxMinMat[, 1] <- apply(maxMinArr[ , , 1], 1, max)
-  maxMinMat[, 2] <- apply(maxMinArr[ , , 2], 1, min)
+  maxMinMat[, 1] <- apply(maxMinArr[ , , 1, drop = FALSE], 1, max)
+  maxMinMat[, 2] <- apply(maxMinArr[ , , 2, drop = FALSE], 1, min)
 
   maxMinInd <- array(0, c(groupNum, fileNum, 2))
   LenMat <- matrix(0, groupNum, fileNum)

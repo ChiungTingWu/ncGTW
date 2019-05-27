@@ -29,7 +29,7 @@ misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
     excluGroups <- excluInfo$excluGroups
 
     rtWin <-  excluGroups[ , 'rtmax'] - excluGroups[ , 'rtmin']
-    return(excluGroups[rtWin < maxRtWin, ])
+    return(excluGroups[rtWin < maxRtWin, , drop = FALSE])
 }
 
 
@@ -192,7 +192,7 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
         }
     }
     excluGroups <- cbind(which(excluGroupsNum != 0),
-                         groupInfo$largeWinGroups[which(excluGroupsNum != 0),])
+                         groupInfo$largeWinGroups[which(excluGroupsNum != 0), , drop = FALSE])
     colnames(excluGroups)[1] <- 'index'
 
     excluInfo <- list(excluGroups = excluGroups, excluPval = excluPval,
