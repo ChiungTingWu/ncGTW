@@ -1,25 +1,31 @@
 #' Detect misaligned peak groups in xcmsSet object of XCMS
 #'
-#' This function detects the misaligned peak groups with two objects of class
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with two different values of "bw"
+#' This function detects the misaligned peak groups with two
+#' \code{\link[xcms]{xcmsSet-class}} with two different values of "bw"
 #' parameter in \code{\link[xcms]{group}}.
-#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object with
 #'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}}
 #'     object with a smaller bw, usually the resolution of the retension time.
 #' @param ppm Should set as same as the one in the input
-#'     \code{\link[xcms::xcmsSet-class]{xcmsSet}} object.
+#'     \code{\link[xcms]{xcmsSet-class}} object.
 #' @param qThre The threshould of the p-value after multiple test correction.
 #'     The default is 0.05.
 #' @param maxRtWin The threshould of the maximum retension time range. This is
 #'     for filtering out some bad groups. The default is 50 (seconds).
 #' @details This function includes two major steps to determine a peak group is
 #' misaligned or not.
-#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}}-like object with all
+#' @return A \code{\link[xcms]{xcmsSet-class}}-like object with all
 #' detected misaligned peak groups.
 #' @examples
-#' add(1, 1)
-#' add(10, 1)
+#' # obtain data
+#' data('xcmsSetExamples')
+#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
+#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
+#' ppm <- xcmsSets$ppm
+#'
+#' # detect misaligned features
+#' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
 #' @export
 
 misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
@@ -36,16 +42,16 @@ misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
 #' Calculate the p-values of each peak group
 #'
 #' This function calculates the p-value of each peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#'  with the smaller "bw" parameter,
 #' and finds the corresponding peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
-#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'  with the larger "bw" parameter.
+#' @param xcmsLargeWin A  object with
 #'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#' @param xcmsSmallWin
 #'     object with a smaller bw, usually the resolution of the retension time.
 #' @details This function includes two major steps to determine a peak group is
 #' misaligned or not.
-#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' @return A  object with all
 #' detected misaligned peak groups.
 #' @examples
 #' add(1, 1)
@@ -140,16 +146,16 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 #' Find exclusive peak groups
 #'
 #' This function calculates the p-value of each peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#'  with the smaller "bw" parameter,
 #' and finds the corresponding peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
-#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'  with the larger "bw" parameter.
+#' @param xcmsLargeWin A  object with
 #'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#' @param xcmsSmallWin A
 #'     object with a smaller bw, usually the resolution of the retension time.
 #' @details This function includes two major steps to determine a peak group is
 #' misaligned or not.
-#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' @return A  object with all
 #' detected misaligned peak groups.
 #' @examples
 #' add(1, 1)
