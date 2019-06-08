@@ -10,6 +10,7 @@ src/*.dll
 tests
 tempCode
 *.Rproj
+*.Rold
 *.Rmd
 *.bib
 *.csl
