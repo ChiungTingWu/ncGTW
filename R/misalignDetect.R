@@ -15,7 +15,7 @@
 #'     for filtering out some bad groups. The default is 50 (seconds).
 #' @details This function includes two major steps to determine a peak group is
 #' misaligned or not.
-#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}}-like object with all
 #' detected misaligned peak groups.
 #' @examples
 #' add(1, 1)

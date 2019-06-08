@@ -11,4 +11,5 @@ tests
 tempCode
 *.Rproj
 *.Rmd
-
+*.bib
+*.csl
