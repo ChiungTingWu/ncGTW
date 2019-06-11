@@ -7,21 +7,21 @@
 meanCorOl(ncGTWinput, sampleRt)
 }
 \arguments{
-\item{xcmsLargeWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+\item{xcmsLargeWin}{A  object with
 a larger bw, usually the maximum expected retension time drift.}
 
-\item{xcmsSmallWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+\item{xcmsSmallWin}{A
 object with a smaller bw, usually the resolution of the retension time.}
 }
 \value{
-A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+A  object with all
 detected misaligned peak groups.
 }
 \description{
 This function calculates the p-value of each peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+ with the smaller "bw" parameter,
 and finds the corresponding peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+ with the larger "bw" parameter.
 }
 \details{
 This function includes two major steps to determine a peak group is

@@ -936,4 +936,4 @@ template <typename captype, typename tcaptype, typename flowtype> flowtype IBFSG
 }
 
 
-#include "instances.inc"
+#include "instances.h"

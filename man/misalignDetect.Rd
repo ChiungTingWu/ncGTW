@@ -8,14 +8,14 @@ misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
   maxRtWin = 50)
 }
 \arguments{
-\item{xcmsLargeWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger
+\code{bw}, usually the maximum expected retension time drift.}
 
-\item{xcmsSmallWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
-object with a smaller bw, usually the resolution of the retension time.}
+\item{xcmsSmallWin}{A \code{\link[xcms]{xcmsSet-class}} object with a smaller
+\code{bw}, usually the resolution of the retension time.}
 
 \item{ppm}{Should set as same as the one in the input
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} object.}
+\code{\link[xcms]{xcmsSet-class}} objects.}
 
 \item{qThre}{The threshould of the p-value after multiple test correction.
 The default is 0.05.}
@@ -24,17 +24,22 @@ The default is 0.05.}
 for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
-A \code{\link[xcms::xcmsSet-class]{xcmsSet}}-like object with all
-detected misaligned peak groups.
+A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+  misaligned peak groups.
 }
 \description{
-This function detects the misaligned peak groups with two objects of class
-\code{\link[xcms]{xcmsSet-class}} with two different values of "bw"
-parameter in \code{\link[xcms]{group}}.
+This function detects the misaligned peak groups with two
+\code{\link[xcms]{xcmsSet-class}} object with two different values of
+\code{bw} parameter in \code{\link[xcms]{group}}.
 }
 \details{
 This function includes two major steps to determine a peak group is
-misaligned or not.
+  misaligned or not. The first step calculates the p-value of each peak group
+  in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
+  This step is implemented in \code{\link{splitGroupPval}}. The second step
+  is to find the exclusive peak groups (the groups with no overlapping
+  samples) with adjsted p-values smaller than \code{qThre}. The second step
+  is implemented in \code{\link{exclusiveGroups}}.
 }
 \examples{
 # obtain data

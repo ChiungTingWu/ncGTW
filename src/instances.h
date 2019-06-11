@@ -1,5 +1,5 @@
-#ifndef __INSTANCES_INC__
-#define __INSTANCES_INC__
+#ifndef __INSTANCES_H__
+#define __INSTANCES_H__
 
 template class IBFSGraph<int,int,int>;
 // template class IBFSGraph<short,int,int>;

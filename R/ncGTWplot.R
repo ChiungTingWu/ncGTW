@@ -1,16 +1,16 @@
 #' Plot profiles for each peak group
 #'
 #' This function calculates the p-value of each peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
+#'  with the smaller "bw" parameter,
 #' and finds the corresponding peak group in the
-#' \code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
-#' @param xcmsLargeWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
+#'  with the larger "bw" parameter.
+#' @param xcmsLargeWin A  object with
 #'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
+#' @param xcmsSmallWin A
 #'     object with a smaller bw, usually the resolution of the retension time.
 #' @details This function includes two major steps to determine a peak group is
 #' misaligned or not.
-#' @return A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
+#' @return A object with all
 #' detected misaligned peak groups.
 #' @examples
 #' add(1, 1)
@@ -37,7 +37,7 @@ plotGroup <- function(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[
   mzmed <- round(ncGTWinput$groupInfo['mzmed'], 2)
   groupInd <- ncGTWinput$groupInfo['index']
   tit <- paste("Extracted Ion Chromatogram:", mzmed, "m/z")
-  if (ind){
+  if (!is.null(ind)){
     subt <- paste0("Group ", groupInd, " (", ind, ")", "   Color: Green -> Purple -> Red")
   } else{
     subt <- paste0("Group ", groupInd,"   Color: Green -> Purple -> Red")

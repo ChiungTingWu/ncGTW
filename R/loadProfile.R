@@ -1,23 +1,32 @@
-#' Load profiles for each peak group
+#' Load sample profiles for each peak group
 #'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
+#' This function loads each raw sample profiles from the file with certain m/z
+#' and RT range.
+#' @param filePaths The character vector of the loading file paths.
+#' @param excluGroups The output matrix of \code{\link{misalignDetect}}, in
+#'   which \code{mzmin}, \code{mzmax}, \code{rtmin}, and \code{rtmax} are set as
+#'   the m/z and RT range for loading.
+#' @param mzAdd The extended m/z range for loading (both sides), and the default
+#'   is 0.005.
+#' @param rtAdd The extended RT range for loading (both sides), and the default
+#'   is 10 (seconds).
+#' @param profstep The size of each m/z bin for peak integration.
+#' @param BPPARAM A object of \pkg{BiocParallel} to control parallel processing,
+#'   and can be created by \code{\link[BiocParallel]{SerialParam}},
+#'   \code{\link[BiocParallel]{MulticoreParam}}, or
+#'   \code{\link[BiocParallel]{SnowParam}}.
+#'
+#'
 #' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A  object with all
-#' detected misaligned peak groups.
+#'   misaligned or not.
+#' @return A  object with all detected misaligned peak groups.
 #' @examples
 #' add(1, 1)
 #' add(10, 1)
 #' @export
 
-loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profstep = 0.01, BPPARAM = bpparam()){
+loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
+                        profstep = 0.01, BPPARAM = bpparam()){
   groupNum <- dim(excluGroups)[1]
   fileNum <- length(filePaths)
 
@@ -30,13 +39,19 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
 
 
   t1 <- Sys.time()
-  eicList <- suppressWarnings(bplapply(filePaths, loadEic, mzRange, rtRange, profstep, BPPARAM = BPPARAM))
+  eicList <- suppressWarnings(bplapply(filePaths, loadEic, mzRange, rtRange,
+                                       profstep, BPPARAM = BPPARAM))
   t2 <- Sys.time()
   print(t2 -t1)
 
   groupProf <- vector("list", groupNum)
   groupRt <- vector("list", groupNum)
-  names(groupProf) <- paste0('group', excluGroups[, 'index'])
+  if ('index' %in% colnames(excluGroups)){
+    groupInd <- excluGroups[, 'index']
+  } else{
+    groupInd <- 1:nrow(excluGroups)
+  }
+  names(groupProf) <- paste0('group', groupInd)
   names(groupRt) <- names(groupProf)
 
   maxMinArr <- array(0, c(groupNum, fileNum, 2))
@@ -55,8 +70,10 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
   LenMat <- matrix(0, groupNum, fileNum)
   for (i in 1:groupNum){
     for (j in 1:fileNum){
-      maxMinInd[i, j, 1] <- which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 1]))
-      maxMinInd[i, j, 2] <- which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 2]))
+      maxMinInd[i, j, 1] <-
+        which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 1]))
+      maxMinInd[i, j, 2] <-
+        which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 2]))
       LenMat[i, j] <- maxMinInd[i, j, 2] - maxMinInd[i, j, 1] + 1
     }
   }
@@ -75,7 +92,8 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
     groupProf[[i]] <- matrix(0, fileNum, LenVec[i])
     groupRt[[i]] <- matrix(0, fileNum, LenVec[i])
     for (j in 1:fileNum){
-      rtProf <- eicList[[j]][[i]][maxMinInd[i, j, 1]:( maxMinInd[i, j, 1] + LenVec[i] - 1), ]
+      rtProf <- eicList[[j]][[i]][maxMinInd[i, j, 1]:
+                                    ( maxMinInd[i, j, 1] + LenVec[i] - 1), ]
       groupRt[[i]][j, ] <- rtProf[ , 1]
       groupProf[[i]][j, ] <- rtProf[ , 2]
     }
@@ -83,7 +101,10 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10, profs
 
   ncGTWinputs <- vector('list', groupNum)
   for (n in 1:groupNum){
-    ncGTWinputs[[n]] <- list(groupInfo = excluGroups[n, ],
+    groupInfo <- excluGroups[n, ]
+    if (!'index' %in% names(groupInfo))
+      groupInfo <- c(index = n, groupInfo)
+    ncGTWinputs[[n]] <- list(groupInfo = groupInfo,
                              profiles = groupProf[[n]], rtRaw = groupRt[[n]])
   }
 

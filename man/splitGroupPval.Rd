@@ -2,32 +2,68 @@
 % Please edit documentation in R/misalignDetect.R
 \name{splitGroupPval}
 \alias{splitGroupPval}
-\title{Calculate the p-values of each peak group}
+\title{Calculate the p-value of each peak group}
 \usage{
 splitGroupPval(xcmsLargeWin, xcmsSmallWin)
 }
 \arguments{
-\item{xcmsLargeWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger
+\code{bw}, usually the maximum expected retension time drift.}
 
-\item{xcmsSmallWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
-object with a smaller bw, usually the resolution of the retension time.}
+\item{xcmsSmallWin}{A \code{\link[xcms]{xcmsSet-class}} object with a smaller
+\code{bw}, usually the resolution of the retension time.}
 }
 \value{
-A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
-detected misaligned peak groups.
+A list containing the following components:
+
+  \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
+
+  \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
+
+  \item{largeWinGroupidx}{The peak indexes in each peak group in
+  \code{xcmsLargeWin}.}
+
+  \item{smallWinGroupidx}{The peak indexes in each peak group in
+  \code{xcmsSmallWin}.}
+
+  \item{largeWinSampleidx}{The corresponding sample indexes for each peak
+  group in \code{xcmsLargeWin}.}
+
+  \item{smallWinSampleidx}{The corresponding sample indexes for each peak
+  group in \code{xcmsSmallWin}.}
+
+  \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
+  for each peak group in \code{xcmsLargeWin}.}
+
+  \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin} which
+  has a corresponding group in \code{xcmsLargeWin}. The p-value of group in
+  \code{xcmsSmallWin} with no corresponding group in \code{xcmsLargeWin} is
+  not important.}
+
+  \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
+
+  \item{pvalues}{The adjusted p-value of each peak group in
+  \code{xcmsSmallWin}.}
+
+  \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
+  groups in \code{xcmsLargeWin} (the smallest one among the corresponding
+  peak groups in \code{xcmsSmallWin}).}
 }
 \description{
-This function calculates the p-value of each peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
-and finds the corresponding peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+This function calculates the p-value of each peak group.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function calculates the p-value of each peak group in the
+  \code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
+  finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
+  with the larger \code{bw} parameter.
 }
 \examples{
-add(1, 1)
-add(10, 1)
+# obtain data
+data('xcmsSetExamples')
+xcmsLargeWin <- xcmsSets$xcmsLargeWin
+xcmsSmallWin <- xcmsSets$xcmsSmallWin
+
+# calculate the p-value of each peak group
+groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
 }

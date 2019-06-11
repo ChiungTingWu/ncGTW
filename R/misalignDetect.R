@@ -1,22 +1,27 @@
 #' Detect misaligned peak groups in xcmsSet object of XCMS
 #'
 #' This function detects the misaligned peak groups with two
-#' \code{\link[xcms]{xcmsSet-class}} with two different values of "bw"
-#' parameter in \code{\link[xcms]{group}}.
-#' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}}
-#'     object with a smaller bw, usually the resolution of the retension time.
+#' \code{\link[xcms]{xcmsSet-class}} object with two different values of
+#' \code{bw} parameter in \code{\link[xcms]{group}}.
+#' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object with a larger
+#'   \code{bw}, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}} object with a smaller
+#'   \code{bw}, usually the resolution of the retension time.
 #' @param ppm Should set as same as the one in the input
-#'     \code{\link[xcms]{xcmsSet-class}} object.
+#'   \code{\link[xcms]{xcmsSet-class}} objects.
 #' @param qThre The threshould of the p-value after multiple test correction.
-#'     The default is 0.05.
+#'   The default is 0.05.
 #' @param maxRtWin The threshould of the maximum retension time range. This is
-#'     for filtering out some bad groups. The default is 50 (seconds).
+#'   for filtering out some bad groups. The default is 50 (seconds).
 #' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A \code{\link[xcms]{xcmsSet-class}}-like object with all
-#' detected misaligned peak groups.
+#'   misaligned or not. The first step calculates the p-value of each peak group
+#'   in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
+#'   This step is implemented in \code{\link{splitGroupPval}}. The second step
+#'   is to find the exclusive peak groups (the groups with no overlapping
+#'   samples) with adjsted p-values smaller than \code{qThre}. The second step
+#'   is implemented in \code{\link{exclusiveGroups}}.
+#' @return A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+#'   misaligned peak groups.
 #' @examples
 #' # obtain data
 #' data('xcmsSetExamples')
@@ -39,23 +44,60 @@ misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
 }
 
 
-#' Calculate the p-values of each peak group
+#' Calculate the p-value of each peak group
 #'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A  object with all
-#' detected misaligned peak groups.
+#' This function calculates the p-value of each peak group.
+#' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object with a larger
+#'   \code{bw}, usually the maximum expected retension time drift.
+#' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}} object with a smaller
+#'   \code{bw}, usually the resolution of the retension time.
+#' @details This function calculates the p-value of each peak group in the
+#'   \code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
+#'   finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
+#'   with the larger \code{bw} parameter.
+#' @return A list containing the following components:
+#'
+#'   \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
+#'
+#'   \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
+#'
+#'   \item{largeWinGroupidx}{The peak indexes in each peak group in
+#'   \code{xcmsLargeWin}.}
+#'
+#'   \item{smallWinGroupidx}{The peak indexes in each peak group in
+#'   \code{xcmsSmallWin}.}
+#'
+#'   \item{largeWinSampleidx}{The corresponding sample indexes for each peak
+#'   group in \code{xcmsLargeWin}.}
+#'
+#'   \item{smallWinSampleidx}{The corresponding sample indexes for each peak
+#'   group in \code{xcmsSmallWin}.}
+#'
+#'   \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
+#'   for each peak group in \code{xcmsLargeWin}.}
+#'
+#'   \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin} which
+#'   has a corresponding group in \code{xcmsLargeWin}. The p-value of group in
+#'   \code{xcmsSmallWin} with no corresponding group in \code{xcmsLargeWin} is
+#'   not important.}
+#'
+#'   \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
+#'
+#'   \item{pvalues}{The adjusted p-value of each peak group in
+#'   \code{xcmsSmallWin}.}
+#'
+#'   \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
+#'   groups in \code{xcmsLargeWin} (the smallest one among the corresponding
+#'   peak groups in \code{xcmsSmallWin}).}
+#'
 #' @examples
-#' add(1, 1)
-#' add(10, 1)
+#' # obtain data
+#' data('xcmsSetExamples')
+#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
+#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
+#'
+#' # calculate the p-value of each peak group
+#' groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
 #' @export
 
 splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
@@ -143,23 +185,38 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 }
 
 
-#' Find exclusive peak groups
+#' Find the possible misaligned peak groups
 #'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A  object with all
-#' detected misaligned peak groups.
+#' This function finds possible misaligned peak groups with a thresshold of the
+#' adjusted p-value.
+#' @param groupInfo An output list from \code{\link{splitGroupPval}} a larger
+#'   bw, usually the maximum expected retension time drift.
+#' @param ppm Should set as same as the one used in the corresponding
+#'   \code{\link[xcms]{xcmsSet-class}} object.
+#' @param qThre The threshould of the adjusted p-value of output peak groups.
+#' @details This function finds the groups in \code{largeWinGroups} which has
+#'   corrsponding exclusive peak groups in \code{smallWinGroups}, and output the
+#'   groups with adjusted p-value smaller than \code{qThre}.
+#' @return A list containing the following components:
+#'
+#'   \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+#'   misaligned peak groups.}
+#'
+#'   \item{excluPval}{The adjusted p-values of the groups in \code{excluGroups}.}
+#'
+#'   \item{excluLargeSmall}{The corresponding group indexes of the groups in \code{excluGroups}.}
 #' @examples
-#' add(1, 1)
-#' add(10, 1)
+#' # obtain data
+#' data('xcmsSetExamples')
+#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
+#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
+#' ppm <- xcmsSets$ppm
+#'
+#' # calculate the p-value of each peak group
+#' groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
+#'
+#' # output the possible misaligned peak groups
+#' # excluInfo <- exclusiveGroups(groupInfo, ppm, 0.05)
 #' @export
 
 exclusiveGroups <- function(groupInfo, ppm, qThre){

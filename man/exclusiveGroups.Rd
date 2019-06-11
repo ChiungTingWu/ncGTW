@@ -2,32 +2,48 @@
 % Please edit documentation in R/misalignDetect.R
 \name{exclusiveGroups}
 \alias{exclusiveGroups}
-\title{Find exclusive peak groups}
+\title{Find the possible misaligned peak groups}
 \usage{
 exclusiveGroups(groupInfo, ppm, qThre)
 }
 \arguments{
-\item{xcmsLargeWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{groupInfo}{An output list from \code{\link{splitGroupPval}} a larger
+bw, usually the maximum expected retension time drift.}
 
-\item{xcmsSmallWin}{A \code{\link[xcms::xcmsSet-class]{xcmsSet}}
-object with a smaller bw, usually the resolution of the retension time.}
+\item{ppm}{Should set as same as the one used in the corresponding
+\code{\link[xcms]{xcmsSet-class}} object.}
+
+\item{qThre}{The threshould of the adjusted p-value of output peak groups.}
 }
 \value{
-A \code{\link[xcms::xcmsSet-class]{xcmsSet}} object with all
-detected misaligned peak groups.
+A list containing the following components:
+
+  \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+  misaligned peak groups.}
+
+  \item{excluPval}{The adjusted p-values of the groups in \code{excluGroups}.}
+
+  \item{excluLargeSmall}{The corresponding group indexes of the groups in \code{excluGroups}.}
 }
 \description{
-This function calculates the p-value of each peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the smaller "bw" parameter,
-and finds the corresponding peak group in the
-\code{\link[xcms::xcmsSet-class]{xcmsSet}} with the larger "bw" parameter.
+This function finds possible misaligned peak groups with a thresshold of the
+adjusted p-value.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function finds the groups in \code{largeWinGroups} which has
+  corrsponding exclusive peak groups in \code{smallWinGroups}, and output the
+  groups with adjusted p-value smaller than \code{qThre}.
 }
 \examples{
-add(1, 1)
-add(10, 1)
+# obtain data
+data('xcmsSetExamples')
+xcmsLargeWin <- xcmsSets$xcmsLargeWin
+xcmsSmallWin <- xcmsSets$xcmsSmallWin
+ppm <- xcmsSets$ppm
+
+# calculate the p-value of each peak group
+groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
+
+# output the possible misaligned peak groups
+# excluInfo <- exclusiveGroups(groupInfo, ppm, 0.05)
 }
