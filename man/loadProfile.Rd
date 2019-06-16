@@ -2,33 +2,76 @@
 % Please edit documentation in R/loadProfile.R
 \name{loadProfile}
 \alias{loadProfile}
-\title{Load profiles for each peak group}
+\title{Load sample profiles for each peak group}
 \usage{
 loadProfile(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-  profstep = 0.01, BPPARAM = bpparam())
+  profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
 }
 \arguments{
-\item{xcmsLargeWin}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{filePaths}{The character vector of the loading file paths.}
 
-\item{xcmsSmallWin}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{excluGroups}{The output matrix of \code{\link{misalignDetect}} or
+\code{\link[xcms]{xcmsSet-class}}$\code{group}, in which \code{mzmin},
+\code{mzmax}, \code{rtmin}, and \code{rtmax} are set as the m/z and RT
+range for loading.}
+
+\item{mzAdd}{The extra m/z range for loading (both sides), and the default is
+0.005.}
+
+\item{rtAdd}{The extra RT range for loading (both sides), and the default is
+10 (seconds).}
+
+\item{profstep}{The size of each m/z bin for peak integration.}
+
+\item{BPPARAM}{A object of \pkg{BiocParallel} to control parallel processing,
+and can be created by \code{\link[BiocParallel]{SerialParam}},
+\code{\link[BiocParallel]{MulticoreParam}}, or
+\code{\link[BiocParallel]{SnowParam}}.}
 }
 \value{
-A  object with all
-detected misaligned peak groups.
+A list of the same length as the row number of \code{excluGroups},
+  the components of each element is as following:
+
+  \item{groupInfo}{The peak group information from \code{excluGroups}.}
+
+  \item{profiles}{The loaded intensity matrix with row as sample, column as
+  RT.}
+
+  \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
 }
 \description{
-This function calculates the p-value of each peak group in the
- with the smaller "bw" parameter,
-and finds the corresponding peak group in the
- with the larger "bw" parameter.
+This function loads each raw sample profiles from the file with certain m/z
+and RT range.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function obtains the extracted ion chromatogram for each sample
+  at the givin m/z and RT range with a certain m/z bin size for integration.
+  Considering there may be missing peak by peak detection, \code{mzAdd} and
+  \code{rtAdd} are to increase the integration range.
 }
 \examples{
-add(1, 1)
-add(10, 1)
+# obtain data
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+ppm <- xcmsExamples$ppm
+
+# detect misaligned features
+excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+
+# obtain the paths of the sample files
+filepath <- system.file("extdata", package = "ncGTW")
+file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
+
+tempInd <- matrix(0, length(file), 1)
+for (n in 1:length(file)){
+  tempCha <- file[n]
+  tempLen <- nchar(tempCha)
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+}
+# sort the paths by data acquisition order
+file <- file[sort.int(tempInd, index.return = TRUE)$ix]
+
+# load the sample profiles
+ncGTWinputs <- loadProfile(file, excluGroups)
 }

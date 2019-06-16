@@ -4,14 +4,14 @@
 \alias{compCV}
 \title{Compare CV}
 \usage{
-compCV(XCMSresFilled, ncGTWresFilled)
+compCV(XCMSresFilled, na.rm = FALSE)
 }
 \arguments{
-\item{xcmsLargeWin}{A  object with
+\item{XCMSresFilled}{A  object with
 a larger bw, usually the maximum expected retension time drift.}
 
-\item{xcmsSmallWin}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{na.rm}{A  object with
+a larger bw, usually the maximum expected retension time drift.}
 }
 \value{
 A object with all
@@ -28,6 +28,9 @@ This function includes two major steps to determine a peak group is
 misaligned or not.
 }
 \examples{
-add(1, 1)
-add(10, 1)
+# obtain data
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+
+cv <- compCV(xcmsLargeWin)
 }

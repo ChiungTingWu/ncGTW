@@ -1,26 +1,10 @@
-#' Edited XCMS fillPeaksChromPar for feature-wise warping functions
-#'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A  object with all
-#' detected misaligned peak groups.
-#' @examples
-#' add(1, 1)
-#' add(10, 1)
-#' @export
+# Edited XCMS fillPeaksChromPar for feature-wise warping functions
+
 
 fillPeaksChromPar <- function(arg) {
 
-  require(xcms)
-  require(ncGTW)
+  suppressMessages(requireNamespace("xcms", quietly = TRUE))
+  suppressMessages(requireNamespace("ncGTW", quietly = TRUE))
   print('This is edited from XCMS (fillPeaksChromPar).....')
 
   params <- arg$params
@@ -83,7 +67,7 @@ fillPeaksChromPar <- function(arg) {
 
 
 getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
-  require(xcms)
+  suppressMessages(requireNamespace("xcms", quietly = TRUE))
   print('ncGTW fillpeaks\n')
   ## Here we're avoiding the profFun call.
   if (all(c("mzmin","mzmax","rtmin","rtmax") %in% colnames(peakrange)))

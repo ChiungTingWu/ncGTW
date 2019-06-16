@@ -7,27 +7,77 @@
 adjustRT(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm)
 }
 \arguments{
-\item{xcmsLargeWin}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{xcmsLargeWin}{A  object with a larger bw, usually the maximum expected
+retension time drift.}
 
-\item{xcmsSmallWin}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{ncGTWinput}{A object with a smaller bw, usually the resolution of the
+retension time.}
+
+\item{ncGTWoutput}{A  object with a larger bw, usually the maximum expected
+retension time drift.}
+
+\item{ppm}{A object with a smaller bw, usually the resolution of the
+retension time.}
 }
 \value{
-A  object with all
-detected misaligned peak groups.
+A  object with all detected misaligned peak groups.
 }
 \description{
-This function calculates the p-value of each peak group in the
- with the smaller "bw" parameter,
-and finds the corresponding peak group in the
- with the larger "bw" parameter.
+This function calculates the p-value of each peak group in the with the
+smaller "bw" parameter, and finds the corresponding peak group in the with
+the larger "bw" parameter.
 }
 \details{
 This function includes two major steps to determine a peak group is
-misaligned or not.
+  misaligned or not.
 }
 \examples{
-add(1, 1)
-add(10, 1)
+# obtain data
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+ppm <- xcmsExamples$ppm
+
+# detect misaligned features
+excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+
+# obtain the paths of the sample files
+filepath <- system.file("extdata", package = "ncGTW")
+file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
+
+tempInd <- matrix(0, length(file), 1)
+for (n in 1:length(file)){
+  tempCha <- file[n]
+  tempLen <- nchar(tempCha)
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+}
+# sort the paths by data acquisition order
+file <- file[sort.int(tempInd, index.return = TRUE)$ix]
+
+# load the sample profiles
+ncGTWinputs <- loadProfile(file, excluGroups)
+
+# run ncGTW alignment
+ncGTWoutputs <- vector('list', dim(excluGroups)[1])
+for (n in 1:dim(excluGroups)[1])
+ ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+
+# adjust RT with the realignment results from ncGTW
+ncGTWres <- xcmsLargeWin
+ncGTWRt <- vector('list', dim(excluGroups)[1])
+for (n in 1:dim(excluGroups)[1]){
+  adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
+  ncGTWres@peaks <- adjustRes$peaks
+  ncGTWRt[[n]] <- adjustRes$rtncGTW
+}
+
+# apply the adjusted RT to a \\code{\\link[xcms]{xcmsSet-class}} object
+ ncGTWres@groups <- excluGroups[ , 2:9]
+ ncGTWres@groupidx <- xcmsLargeWin@groupidx[excluGroups[ , 1]]
+ ncGTWres@rt$corrected <- vector('list', length(ncGTWres@filepaths))
+ for (n in 1:length(ncGTWres@filepaths)){
+   ncGTWres@rt$corrected[[n]] <- vector('list', dim(excluGroups)[1])
+   for (m in 1:dim(ncGTWres@groups)[1])
+     ncGTWres@rt$corrected[[n]][[m]] <- ncGTWRt[[m]][[n]]
+ }
 }

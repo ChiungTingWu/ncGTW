@@ -20,14 +20,14 @@
 #'   is to find the exclusive peak groups (the groups with no overlapping
 #'   samples) with adjsted p-values smaller than \code{qThre}. The second step
 #'   is implemented in \code{\link{exclusiveGroups}}.
-#' @return A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
-#'   misaligned peak groups.
+#' @return A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with
+#'   all detected misaligned peak groups.
 #' @examples
 #' # obtain data
-#' data('xcmsSetExamples')
-#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
-#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
-#' ppm <- xcmsSets$ppm
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+#' ppm <- xcmsExamples$ppm
 #'
 #' # detect misaligned features
 #' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
@@ -92,9 +92,9 @@ misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
 #'
 #' @examples
 #' # obtain data
-#' data('xcmsSetExamples')
-#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
-#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
 #'
 #' # calculate the p-value of each peak group
 #' groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
@@ -199,7 +199,7 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 #'   groups with adjusted p-value smaller than \code{qThre}.
 #' @return A list containing the following components:
 #'
-#'   \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+#'   \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with all detected
 #'   misaligned peak groups.}
 #'
 #'   \item{excluPval}{The adjusted p-values of the groups in \code{excluGroups}.}
@@ -207,10 +207,10 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 #'   \item{excluLargeSmall}{The corresponding group indexes of the groups in \code{excluGroups}.}
 #' @examples
 #' # obtain data
-#' data('xcmsSetExamples')
-#' xcmsLargeWin <- xcmsSets$xcmsLargeWin
-#' xcmsSmallWin <- xcmsSets$xcmsSmallWin
-#' ppm <- xcmsSets$ppm
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+#' ppm <- xcmsExamples$ppm
 #'
 #' # calculate the p-value of each peak group
 #' groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)

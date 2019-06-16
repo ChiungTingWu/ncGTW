@@ -3,30 +3,62 @@
 #' This function loads each raw sample profiles from the file with certain m/z
 #' and RT range.
 #' @param filePaths The character vector of the loading file paths.
-#' @param excluGroups The output matrix of \code{\link{misalignDetect}}, in
-#'   which \code{mzmin}, \code{mzmax}, \code{rtmin}, and \code{rtmax} are set as
-#'   the m/z and RT range for loading.
-#' @param mzAdd The extended m/z range for loading (both sides), and the default
-#'   is 0.005.
-#' @param rtAdd The extended RT range for loading (both sides), and the default
-#'   is 10 (seconds).
+#' @param excluGroups The output matrix of \code{\link{misalignDetect}} or
+#'   \code{\link[xcms]{xcmsSet-class}}$\code{group}, in which \code{mzmin},
+#'   \code{mzmax}, \code{rtmin}, and \code{rtmax} are set as the m/z and RT
+#'   range for loading.
+#' @param mzAdd The extra m/z range for loading (both sides), and the default is
+#'   0.005.
+#' @param rtAdd The extra RT range for loading (both sides), and the default is
+#'   10 (seconds).
 #' @param profstep The size of each m/z bin for peak integration.
 #' @param BPPARAM A object of \pkg{BiocParallel} to control parallel processing,
 #'   and can be created by \code{\link[BiocParallel]{SerialParam}},
 #'   \code{\link[BiocParallel]{MulticoreParam}}, or
 #'   \code{\link[BiocParallel]{SnowParam}}.
 #'
+#' @details This function obtains the extracted ion chromatogram for each sample
+#'   at the givin m/z and RT range with a certain m/z bin size for integration.
+#'   Considering there may be missing peak by peak detection, \code{mzAdd} and
+#'   \code{rtAdd} are to increase the integration range.
+#' @return A list of the same length as the row number of \code{excluGroups},
+#'   the components of each element is as following:
 #'
-#' @details This function includes two major steps to determine a peak group is
-#'   misaligned or not.
-#' @return A  object with all detected misaligned peak groups.
+#'   \item{groupInfo}{The peak group information from \code{excluGroups}.}
+#'
+#'   \item{profiles}{The loaded intensity matrix with row as sample, column as
+#'   RT.}
+#'
+#'   \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
 #' @examples
-#' add(1, 1)
-#' add(10, 1)
+#' # obtain data
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+#' ppm <- xcmsExamples$ppm
+#'
+#' # detect misaligned features
+#' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+#'
+#' # obtain the paths of the sample files
+#' filepath <- system.file("extdata", package = "ncGTW")
+#' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
+#'
+#' tempInd <- matrix(0, length(file), 1)
+#' for (n in 1:length(file)){
+#'   tempCha <- file[n]
+#'   tempLen <- nchar(tempCha)
+#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+#' }
+#' # sort the paths by data acquisition order
+#' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
+#'
+#' # load the sample profiles
+#' ncGTWinputs <- loadProfile(file, excluGroups)
 #' @export
 
 loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-                        profstep = 0.01, BPPARAM = bpparam()){
+                        profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1)){
   groupNum <- dim(excluGroups)[1]
   fileNum <- length(filePaths)
 
@@ -39,7 +71,7 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
 
 
   t1 <- Sys.time()
-  eicList <- suppressWarnings(bplapply(filePaths, loadEic, mzRange, rtRange,
+  eicList <- suppressWarnings(BiocParallel::bplapply(filePaths, loadEic, mzRange, rtRange,
                                        profstep, BPPARAM = BPPARAM))
   t2 <- Sys.time()
   print(t2 -t1)
@@ -114,17 +146,24 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
 
 
 loadEic <- function(filePath, mzRange, rtRange, profstep){
-  suppressMessages(require(xcms, quietly = TRUE))
+
+  # suppressMessages(requireNamespace("xcms", quietly = TRUE))
+
   # rawProf <- suppressMessages(xcmsRaw(filePath, profstep))
   # rawEic <- getEIC(rawProf, mzRange, rtRange)
   rawProf <- suppressMessages(xcmsRaw(filePath, 0))
+
   rawEic <- vector('list', dim(mzRange)[1])
+
   for (n in 1: dim(mzRange)[1]){
-    tempEic <- rawEIC(rawProf, mzRange[n, ], rtRange[n, ])
+    tempEic <- xcms::rawEIC(rawProf, mzRange[n, ], rtRange[n, ])
     rawEic[[n]] <- cbind(tempEic$scan, tempEic$intensity)
   }
+
   rm(rawProf)
+
   gc()
+
   # return(rawEic@eic$xcmsRaw)
   return(rawEic)
 }

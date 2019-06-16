@@ -1,3 +1,133 @@
+#' Compute average pairwise correlation and overlapping area
+#'
+#' This function calculates the p-value of each peak group in the
+#'  with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#'  with the larger "bw" parameter.
+#' @param ncGTWinput A  object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param sampleRt A
+#'     object with a smaller bw, usually the resolution of the retension time.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A  object with all
+#' detected misaligned peak groups.
+#' @examples
+#' # obtain data
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+#' ppm <- xcmsExamples$ppm
+#'
+#' # detect misaligned features
+#' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+#'
+#' # obtain the paths of the sample files
+#' filepath <- system.file("extdata", package = "ncGTW")
+#' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
+#'
+#' tempInd <- matrix(0, length(file), 1)
+#' for (n in 1:length(file)){
+#'   tempCha <- file[n]
+#'   tempLen <- nchar(tempCha)
+#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+#' }
+#' # sort the paths by data acquisition order
+#' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
+#'
+#' # load the sample profiles
+#' ncGTWinputs <- loadProfile(file, excluGroups)
+#'
+#' XCMSCor <- matrix(0, length(ncGTWinputs), 1)
+#' XCMSOl <- matrix(0, length(ncGTWinputs), 1)
+#' for (n in 1:length(ncGTWinputs)){
+#'  XCMSmean <- meanCorOl(ncGTWinputs[[n]], xcmsLargeWin@rt$corrected)
+#'  XCMSCor[n] <- XCMSmean$cor
+#'  XCMSOl[n] <- XCMSmean$ol
+#' }
+#' @export
+
+meanCorOl <- function(ncGTWinput, sampleRt){
+  samNum <- dim(ncGTWinput$rtRaw)[1]
+  pointNum <- dim(ncGTWinput$rtRaw)[2]
+  profiles <- ncGTWinput$profiles
+  rtRange <- matrix(0, samNum, pointNum)
+  for (n in 1:samNum){
+    profiles[n, ] <- gaussFilter(profiles[n, ])
+    rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
+  }
+  proInter <- matrix(0, samNum, pointNum * 10)
+  interX <- seq(max(rtRange[ , 1]), min(rtRange[ , pointNum]), length.out = pointNum * 10)
+  for (n in 1:samNum)
+    proInter[n, ] <- approx(rtRange[n, ], profiles[n, ], interX, yleft = NA, yright = NA)$y
+  corM <- cor(t(proInter))
+  olM <- matrix(0, samNum, samNum)
+  for (i in 1:samNum)
+    for (j in i:samNum){
+      olM[i, j] <- sum(pmin(proInter[i, ], proInter[j, ])) / min(sum(proInter[i, ]), sum(proInter[j, ]))
+      olM[j, i] <- olM[i, j]
+    }
+
+  return(list(cor = mean(corM), ol = mean(olM)))
+
+}
+
+
+#' Compare CV
+#'
+#' This function calculates the p-value of each peak group in the
+#'  with the smaller "bw" parameter,
+#' and finds the corresponding peak group in the
+#'  with the larger "bw" parameter.
+#' @param XCMSresFilled A  object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @param na.rm A  object with
+#'     a larger bw, usually the maximum expected retension time drift.
+#' @details This function includes two major steps to determine a peak group is
+#' misaligned or not.
+#' @return A object with all
+#' detected misaligned peak groups.
+#' @examples
+#' # obtain data
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#'
+#' cv <- compCV(xcmsLargeWin)
+#' @export
+
+compCV <- function(XCMSresFilled, na.rm = FALSE){
+  groupNum <- dim(XCMSresFilled@groups)[1]
+  sampleNum <- max(XCMSresFilled@peaks[, 'sample'])
+
+  XCMSpeaks <- matrix(0, groupNum, sampleNum)
+  XCMScv <- matrix(0, groupNum, 1)
+
+  for (n in 1:groupNum)
+  {
+    XCMSgroupPeaks <- XCMSresFilled@peaks[XCMSresFilled@groupidx[[n]], ]
+
+    XCMSonePeak <- matrix(0, sampleNum, dim(XCMSresFilled@peaks)[2])
+    colnames(XCMSonePeak) <- colnames(XCMSgroupPeaks)
+
+    for (m in 1:sampleNum)
+    {
+      XCMSpeakInd <- which(XCMSgroupPeaks[, 'sample'] == m)
+      XCMSpeakInd <- XCMSpeakInd[which.max(XCMSgroupPeaks[XCMSpeakInd, 'into'])]
+      if (length(XCMSpeakInd) == 0){
+        XCMSonePeak[m, ] <- NA
+      } else{
+        XCMSonePeak[m, ] <- XCMSgroupPeaks[XCMSpeakInd, ]
+      }
+    }
+    XCMSpeaks[n, ] <- XCMSonePeak[ , 'into']
+    XCMScv[n] <- sd(XCMSpeaks[n, ], na.rm = na.rm)/mean(XCMSpeaks[n, ], na.rm = na.rm)
+  }
+  return(XCMScv)
+}
+
+
+
+
 gaussFilter <- function(prof, sig = 1){
   sz <- ceiling(sig * 6)    # length of gaussian filter vector
   if (sz < 2){
@@ -98,7 +228,7 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange, sampleInd, path2
     oriPeakRt <- cbind(oriPeakMed, prePeaks[, 'rtmin'] - prePeakMed + oriPeakMed,
                        prePeaks[, 'rtmax'] - prePeakMed + oriPeakMed)
     ncGTWPeakRt <- cbind(ncGTWPeakMed, prePeaks[, 'rtmin'] - prePeakMed + ncGTWPeakMed,
-                       prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
+                         prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
 
     kmeansOriInd <- kmeans(oriPeakRt, oriPeakRt[prePeakInd == groupSam, , drop = FALSE])
     kmeansncGTWInd <- kmeans(ncGTWPeakRt, ncGTWPeakRt[prePeakInd == groupSam, , drop = FALSE])
@@ -118,108 +248,4 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange, sampleInd, path2
   }
   return(statResult)
 
-}
-
-
-#' Compute average pairwise correlation and overlapping area
-#'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A  object with all
-#' detected misaligned peak groups.
-#' @examples
-#' add(1, 1)
-#' add(10, 1)
-#' @export
-
-meanCorOl <- function(ncGTWinput, sampleRt){
-  samNum <- dim(ncGTWinput$rtRaw)[1]
-  pointNum <- dim(ncGTWinput$rtRaw)[2]
-  profiles <- ncGTWinput$profiles
-  rtRange <- matrix(0, samNum, pointNum)
-  for (n in 1:samNum){
-    profiles[n, ] <- gaussFilter(profiles[n, ])
-    rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
-  }
-  proInter <- matrix(0, samNum, pointNum * 10)
-  interX <- seq(max(rtRange[ , 1]), min(rtRange[ , pointNum]), length.out = pointNum * 10)
-  for (n in 1:samNum)
-    proInter[n, ] <- approx(rtRange[n, ], profiles[n, ], interX, yleft = NA, yright = NA)$y
-  corM <- cor(t(proInter))
-  olM <- matrix(0, samNum, samNum)
-  for (i in 1:samNum)
-    for (j in i:samNum){
-      olM[i, j] <- sum(pmin(proInter[i, ], proInter[j, ])) / min(sum(proInter[i, ]), sum(proInter[j, ]))
-      olM[j, i] <- olM[i, j]
-    }
-
-  return(list(cor = mean(corM), ol = mean(olM)))
-
-}
-
-
-#' Compare CV
-#'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A object with all
-#' detected misaligned peak groups.
-#' @examples
-#' add(1, 1)
-#' add(10, 1)
-#' @export
-
-compCV <- function(XCMSresFilled, ncGTWresFilled){
-  groupNum <- dim(XCMSresFilled@groups)[1]
-  sampleNum <- max(XCMSresFilled@peaks[, 'sample'])
-
-  ncGTWpeaks <- matrix(0, groupNum, sampleNum)
-  XCMSpeaks <- matrix(0, groupNum, sampleNum)
-
-  ncGTWcv <- matrix(0, groupNum, 1)
-  XCMScv <- matrix(0, groupNum, 1)
-
-  for (n in 1:groupNum)
-  {
-    ncGTWgroupPeaks <- ncGTWresFilled@peaks[ncGTWresFilled@groupidx[[n]], ]
-    XCMSgroupPeaks <- XCMSresFilled@peaks[XCMSresFilled@groupidx[[n]], ]
-
-    ncGTWonePeak <- matrix(0, sampleNum, dim(ncGTWresFilled@peaks)[2])
-    colnames(ncGTWonePeak) <- colnames(ncGTWgroupPeaks)
-    XCMSonePeak <- matrix(0, sampleNum, dim(XCMSresFilled@peaks)[2])
-    colnames(XCMSonePeak) <- colnames(XCMSgroupPeaks)
-
-    for (m in 1:sampleNum)
-    {
-      ncGTWpeakInd <- which(ncGTWgroupPeaks[, 'sample'] == m)
-      ncGTWpeakInd <- ncGTWpeakInd[which.max(ncGTWgroupPeaks[ncGTWpeakInd, 'into'])]
-      ncGTWonePeak[m, ] <- ncGTWgroupPeaks[ncGTWpeakInd, ]
-
-      XCMSpeakInd <- which(XCMSgroupPeaks[, 'sample'] == m)
-      XCMSpeakInd <- XCMSpeakInd[which.max(XCMSgroupPeaks[XCMSpeakInd, 'into'])]
-      XCMSonePeak[m, ] <- XCMSgroupPeaks[XCMSpeakInd, ]
-    }
-    ncGTWpeaks[n, ] <- ncGTWonePeak[ , 'into']
-    XCMSpeaks[n, ] <- XCMSonePeak[ , 'into']
-
-    ncGTWcv[n] <- sd(ncGTWpeaks[n, ])/mean(ncGTWpeaks[n, ])
-    XCMScv[n] <- sd(XCMSpeaks[n, ])/mean(XCMSpeaks[n, ])
-  }
-  return(list(ncGTWcv = ncGTWcv, XCMScv = XCMScv))
 }

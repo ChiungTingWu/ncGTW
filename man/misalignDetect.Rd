@@ -24,8 +24,8 @@ The default is 0.05.}
 for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
-A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
-  misaligned peak groups.
+A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with
+  all detected misaligned peak groups.
 }
 \description{
 This function detects the misaligned peak groups with two
@@ -43,10 +43,10 @@ This function includes two major steps to determine a peak group is
 }
 \examples{
 # obtain data
-data('xcmsSetExamples')
-xcmsLargeWin <- xcmsSets$xcmsLargeWin
-xcmsSmallWin <- xcmsSets$xcmsSmallWin
-ppm <- xcmsSets$ppm
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+ppm <- xcmsExamples$ppm
 
 # detect misaligned features
 excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)

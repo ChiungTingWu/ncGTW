@@ -1,20 +1,55 @@
 #' Plot profiles for each peak group
 #'
-#' This function calculates the p-value of each peak group in the
-#'  with the smaller "bw" parameter,
-#' and finds the corresponding peak group in the
-#'  with the larger "bw" parameter.
-#' @param xcmsLargeWin A  object with
-#'     a larger bw, usually the maximum expected retension time drift.
-#' @param xcmsSmallWin A
-#'     object with a smaller bw, usually the resolution of the retension time.
-#' @details This function includes two major steps to determine a peak group is
-#' misaligned or not.
-#' @return A object with all
-#' detected misaligned peak groups.
+#' This function plots sample profiles with loaded information.
+#' @param ncGTWinput An object return by \code{\link{loadProfile}} of sample
+#'   profiles for plotting.
+#' @param sampleRt A list of the same length as the sample number in which each
+#'   element is a vector corresponding to the sample raw/adjusted RT for
+#'   plotting.
+#' @param sampleInd Indicate which samples should be plotted, and the default is
+#'   \code{1:dim(ncGTWinput$rtRaw)[1]}.
+#' @param ind A user defined index, and the default is \code{NULL}.
+#' @param savePath The path to save the plots, and the default is \code{NULL}
+#'   (do not save anything).
+#' @param show Show the plot in R or not, and the default is \code{TRUE}.
+#' @param sub Show more information on the plot or not, and the default is
+#'   \code{TRUE}.
+#' @param filter Apply a Gaussian filter for demonstration or not, and the
+#'   default is \code{FALSE}.
+#'
+#' @details This function plots the extracted ion chromatogram obtained by
+#'   \code{\link{loadProfile}}. The user can decide to save the figure, show the
+#'   figure, or apply a Gaussian filter on the data by parameter setting.
+#' @return A plot to the current device.
 #' @examples
-#' add(1, 1)
-#' add(10, 1)
+#' # obtain data
+#' data('xcmsExamples')
+#' xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+#' xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+#' ppm <- xcmsExamples$ppm
+#'
+#' # detect misaligned features
+#' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
+#'
+#' # obtain the paths of the sample files
+#' filepath <- system.file("extdata", package = "ncGTW")
+#' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
+#'
+#' tempInd <- matrix(0, length(file), 1)
+#' for (n in 1:length(file)){
+#'   tempCha <- file[n]
+#'   tempLen <- nchar(tempCha)
+#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+#' }
+#' # sort the paths by data acquisition order
+#' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
+#'
+#' # load the sample profiles
+#' ncGTWinputs <- loadProfile(file, excluGroups)
+#'
+#' # plot all loaded features
+#' for (n in 1:length(ncGTWinputs))
+#'   plotGroup(ncGTWinputs[[n]], xcmsLargeWin@rt$raw)
 #' @export
 
 plotGroup <- function(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[1],

@@ -11,6 +11,10 @@ LazyData: true
 RoxygenNote: 6.1.1
 LinkingTo: 
     Rcpp
+Suggests: 
+    knitr
+VignetteBuilder: knitr
 Imports: 
     Rcpp,
-    xcms
+    xcms,
+    BiocParallel

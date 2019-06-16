@@ -18,7 +18,7 @@ bw, usually the maximum expected retension time drift.}
 \value{
 A list containing the following components:
 
-  \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}-like matrix with all detected
+  \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with all detected
   misaligned peak groups.}
 
   \item{excluPval}{The adjusted p-values of the groups in \code{excluGroups}.}
@@ -36,10 +36,10 @@ This function finds the groups in \code{largeWinGroups} which has
 }
 \examples{
 # obtain data
-data('xcmsSetExamples')
-xcmsLargeWin <- xcmsSets$xcmsLargeWin
-xcmsSmallWin <- xcmsSets$xcmsSmallWin
-ppm <- xcmsSets$ppm
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+xcmsSmallWin <- xcmsExamples$xcmsSmallWin
+ppm <- xcmsExamples$ppm
 
 # calculate the p-value of each peak group
 groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)

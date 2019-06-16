@@ -60,9 +60,9 @@ This function calculates the p-value of each peak group in the
 }
 \examples{
 # obtain data
-data('xcmsSetExamples')
-xcmsLargeWin <- xcmsSets$xcmsLargeWin
-xcmsSmallWin <- xcmsSets$xcmsSmallWin
+data('xcmsExamples')
+xcmsLargeWin <- xcmsExamples$xcmsLargeWin
+xcmsSmallWin <- xcmsExamples$xcmsSmallWin
 
 # calculate the p-value of each peak group
 groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Chiung-Ting Wu" />
 
-<meta name="date" content="2019-06-08" />
+<meta name="date" content="2019-06-15" />
 
 <title>ncGTW User Manual</title>
 
@@ -633,7 +633,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">ncGTW User Manual</h1>
 <p class="author-name">Chiung-Ting Wu</p>
-<h4 class="date">2019-06-08</h4>
+<h4 class="date">2019-06-15</h4>
 <h4 class="package">Package</h4>
 <p>ncGTW 0.5.0</p>
 
@@ -675,7 +675,7 @@ $(document).ready(function () {
 <pre class="r"><code>library(xcms)
 library(ncGTW)
 
-filepath &lt;- system.file(&quot;data&quot;, package = &quot;ncGTW&quot;)
+filepath &lt;- system.file(&quot;extdata&quot;, package = &quot;ncGTW&quot;)
 file &lt;- list.files(filepath, pattern = &quot;mzxml&quot;, full.names = TRUE)
 # The paths of the 20 samples</code></pre>
 <p>To incorporate the RT structure, the order of the paths in <code>file</code> should be as same as the sample acquisition order (run order). In the example dataset, the index in each file name is the acquisition order, so we sort the paths according to <code>tempInd</code>. When dealing with other dataset, the user should make sure the order of the paths is as same the order of data acquisition.</p>
@@ -728,12 +728,15 @@ xcmsSmallWin &lt;- group(agds, mzwid = MZerror, bw = bwSmall, minfrac = 0)
 <pre class="r"><code>excluGroups &lt;- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
 # Detect misaligned features
 show(excluGroups)
-#&gt;      index    mzmed    mzmin    mzmax    rtmed    rtmin    rtmax npeaks data
-#&gt; [1,]     1 630.5534 630.5527 630.5546 349.4897 347.2043 355.5610     14   14
-#&gt; [2,]     9 931.5268 931.5251 931.5275 336.6458 335.6331 339.6014     17   17</code></pre>
+#&gt;      index    mzmed    mzmin    mzmax    rtmed    rtmin    rtmax npeaks
+#&gt; [1,]     1 630.5534 630.5527 630.5546 349.4897 347.2043 355.5610     14
+#&gt; [2,]     9 931.5268 931.5251 931.5275 336.6458 335.6331 339.6014     17
+#&gt;      extdata
+#&gt; [1,]      14
+#&gt; [2,]      17</code></pre>
 <p>There are two features are detected as shown in <code>excluGroups</code>. Before realigning them, the raw profile of each detected feature of each sample needs to load from the files. <code>loadProfile()</code> loads the needed information with file paths (<code>file</code>) and the detected features (<code>excluGroups</code>) as inputs.</p>
 <pre class="r"><code>ncGTWinputs &lt;- loadProfile(file, excluGroups)
-#&gt; Time difference of 20.97595 secs
+#&gt; Time difference of 17.81679 secs
 # Load raw profiles from the files</code></pre>
 <p>The user can also check the detected features are really misaligned or not by viewing the extracted ion chromatogram. <code>plotGroup()</code> draws the extracted ion chromatogram. <code>ncGTWinputs</code> is the loaded information from <code>loadProfile()</code>, <code>xcmsLargeWin@rt$corrected</code> is the alignment by XCMS, and <code>ind</code> is just a parameter for indexing the chromatograms. The user are free to set <code>ind</code>.</p>
 <pre class="r"><code>for (n in 1:length(ncGTWinputs))
@@ -749,7 +752,7 @@ show(excluGroups)
 <pre class="r"><code>ncGTWoutputs &lt;- vector(&#39;list&#39;, dim(excluGroups)[1])
 # Prepare the output variable
 for (n in 1:dim(excluGroups)[1])
-  ncGTWoutputs[[n]] &lt;- ncGTW(ncGTWinputs[[n]], xcmsLargeWin, parSamp = 5,
+  ncGTWoutputs[[n]] &lt;- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, parSamp = 5,
                              bpParam = SnowParam(workers = 4))
 #&gt; ncGTW is realigning group 1 ...
 #&gt; ncGTW is realigning group 9 ...
@@ -795,7 +798,7 @@ XCMSres@groups &lt;- excluGroups[ , 2:9]
 XCMSres@groupidx &lt;- xcmsLargeWin@groupidx[excluGroups[ , 1]]
 # Consider only the misaligned features with XCMS warping function</code></pre>
 <p>After extract the misaligned features and replace the old warping functions, we can apply <code>fillPeaks</code> in <code>xcms</code> for peak-filling. Since <code>fillPeaks</code> accepts only one warping function for each sample, we need to replace the function <code>fillPeaksChromPar()</code> first.</p>
-<pre class="r"><code>assignInNamespace(&quot;fillPeaksChromPar&quot;, fillPeaksChromPar, ns = &quot;xcms&quot;,
+<pre class="r"><code>assignInNamespace(&quot;fillPeaksChromPar&quot;, ncGTW:::fillPeaksChromPar, ns = &quot;xcms&quot;,
                   envir = as.environment(&quot;package:xcms&quot;))
 # Replace fillPeaksChromPar() in XCMS
 
@@ -803,16 +806,14 @@ ncGTWresFilled &lt;- fillPeaks(ncGTWres)
 XCMSresFilled &lt;- fillPeaks(XCMSres)
 # Peak-filling with old and new warping functions
 
-compCV(XCMSresFilled, ncGTWresFilled)
-#&gt; $ncGTWcv
-#&gt;           [,1]
-#&gt; [1,] 0.2375171
-#&gt; [2,] 0.1278115
-#&gt; 
-#&gt; $XCMScv
+compCV(XCMSresFilled)
 #&gt;           [,1]
 #&gt; [1,] 0.3687170
 #&gt; [2,] 0.3514152
+compCV(ncGTWresFilled)
+#&gt;           [,1]
+#&gt; [1,] 0.2375171
+#&gt; [2,] 0.1278115
 # Compare the coefficient of variation</code></pre>
 <p>For the first misaligned feature, the coefficient of variation (CV) decreases from 0.369 to 0.238, and for the second one, the CV decreases from 0.351 to 0.128. Thus, it is very clear that new warping functions improve the quality of peak-filling significantly.</p>
 </div>
