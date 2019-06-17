@@ -18,12 +18,14 @@ bw, usually the maximum expected retension time drift.}
 \value{
 A list containing the following components:
 
-  \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with all detected
-  misaligned peak groups.}
+  \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like
+  matrix with all detected misaligned peak groups.}
 
-  \item{excluPval}{The adjusted p-values of the groups in \code{excluGroups}.}
+  \item{excluPval}{The adjusted p-values of the groups in
+  \code{excluGroups}.}
 
-  \item{excluLargeSmall}{The corresponding group indexes of the groups in \code{excluGroups}.}
+  \item{excluLargeSmall}{The corresponding group indexes of the groups in
+  \code{excluGroups}.}
 }
 \description{
 This function finds possible misaligned peak groups with a thresshold of the

@@ -39,7 +39,8 @@
 #' for (n in 1:length(file)){
 #'   tempCha <- file[n]
 #'   tempLen <- nchar(tempCha)
-#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+#'                                   tempLen - 6))
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -52,59 +53,66 @@
 #'   plotGroup(ncGTWinputs[[n]], xcmsLargeWin@rt$raw)
 #' @export
 
-plotGroup <- function(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[1],
-                      ind = NULL, savePath = NULL, show = TRUE, sub = TRUE, filter = FALSE){
-  samNum <- dim(ncGTWinput$rtRaw)[1]
-  profiles <- ncGTWinput$profiles
-  if (filter)
+plotGroup <- function(ncGTWinput, sampleRt,
+                      sampleInd = 1:dim(ncGTWinput$rtRaw)[1],
+                      ind = NULL, savePath = NULL, show = TRUE,
+                      sub = TRUE, filter = FALSE){
+    samNum <- dim(ncGTWinput$rtRaw)[1]
+    profiles <- ncGTWinput$profiles
+    if (filter)
+        for (n in 1:samNum)
+            profiles[n, ] <- gaussFilter(profiles[n, ])
+
+    rtRange <- matrix(0, samNum, dim(ncGTWinput$rtRaw)[2])
     for (n in 1:samNum)
-      profiles[n, ] <- gaussFilter(profiles[n, ])
+        rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
 
-  rtRange <- matrix(0, samNum, dim(ncGTWinput$rtRaw)[2])
-  for (n in 1:samNum)
-    rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
+    colVec <- matrix(0, samNum, 1)
+    for (n in 1:dim(colVec)[1])
+        colVec[n] <- rgb(n / samNum, 1 - n / samNum,
+                         abs(samNum / 2 - abs(n - samNum / 2)) / (samNum / 2))
 
-  colVec <- matrix(0, samNum, 1)
-  for (n in 1:dim(colVec)[1])
-    colVec[n] <- rgb(n / samNum, 1 - n / samNum,
-                       abs(samNum / 2 - abs(n - samNum / 2)) / (samNum / 2))
-
-  mzmed <- round(ncGTWinput$groupInfo['mzmed'], 2)
-  groupInd <- ncGTWinput$groupInfo['index']
-  tit <- paste("Extracted Ion Chromatogram:", mzmed, "m/z")
-  if (!is.null(ind)){
-    subt <- paste0("Group ", groupInd, " (", ind, ")", "   Color: Green -> Purple -> Red")
-  } else{
-    subt <- paste0("Group ", groupInd,"   Color: Green -> Purple -> Red")
-  }
-
-  if (show){
-    matplot(t(rtRange[sampleInd, , drop = FALSE]), t(profiles[sampleInd, , drop = FALSE]),
-            type = 'l', col = colVec[sampleInd], lty = 1,
-            xlab="rt (seconds)", ylab="Intensity")
-    if (sub){
-      title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"), sub = subt)
+    mzmed <- round(ncGTWinput$groupInfo['mzmed'], 2)
+    groupInd <- ncGTWinput$groupInfo['index']
+    tit <- paste("Extracted Ion Chromatogram:", mzmed, "m/z")
+    if (!is.null(ind)){
+        subt <- paste0("Group ", groupInd, " (", ind, ")",
+                       "   Color: Green -> Purple -> Red")
     } else{
-      title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"))
+        subt <- paste0("Group ", groupInd,"   Color: Green -> Purple -> Red")
     }
-  }
-  if (length(savePath)!=0){
-    if (substr(savePath, nchar(savePath), nchar(savePath)) != '/')
-      savePath <- paste0(savePath, '/')
-    if (ind){
-      filePath <- paste0(savePath, "group", groupInd, "_", ind, ".png")
-    } else{
-      filePath <- paste0(savePath, "group", groupInd, ".png")
+
+    if (show){
+        matplot(t(rtRange[sampleInd, , drop = FALSE]),
+                t(profiles[sampleInd, , drop = FALSE]),
+                type = 'l', col = colVec[sampleInd], lty = 1,
+                xlab="rt (seconds)", ylab="Intensity")
+        if (sub){
+            title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"),
+                  sub = subt)
+        } else{
+            title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"))
+        }
     }
-    png(filename = filePath, width = 1080, height = 720)
-    matplot(t(rtRange[sampleInd, , drop = FALSE]), t(profiles[sampleInd, , drop = FALSE]),
-            type = 'l', col = colVec[sampleInd], lty = 1,
-            xlab="rt (seconds)", ylab="Intensity")
-    if (sub){
-      title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"), sub = subt)
-    } else{
-      title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"))
+    if (length(savePath)!=0){
+        if (substr(savePath, nchar(savePath), nchar(savePath)) != '/')
+            savePath <- paste0(savePath, '/')
+        if (ind){
+            filePath <- paste0(savePath, "group", groupInd, "_", ind, ".png")
+        } else{
+            filePath <- paste0(savePath, "group", groupInd, ".png")
+        }
+        png(filename = filePath, width = 1080, height = 720)
+        matplot(t(rtRange[sampleInd, , drop = FALSE]), t(profiles[sampleInd, ,
+                                                                 drop = FALSE]),
+                type = 'l', col = colVec[sampleInd], lty = 1,
+                xlab="rt (seconds)", ylab="Intensity")
+        if (sub){
+            title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"),
+                  sub = subt)
+        } else{
+            title(main = paste("Extracted Ion Chromatogram:", mzmed, "m/z"))
+        }
+        dev.off()
     }
-    dev.off()
-  }
 }

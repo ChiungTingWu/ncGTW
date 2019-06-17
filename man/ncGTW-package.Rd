@@ -4,7 +4,8 @@
 \name{ncGTW-package}
 \alias{ncGTW-package}
 \alias{ncGTW}
-\title{ncGTW: A package for detect and align the misaligned features in LC-MS data}
+\title{ncGTW: A package for detecting and aligning the misaligned features in
+LC-MS data}
 \description{
 The purpose of ncGTW is to help XCMS for LC-MS data alignment. Currently,
 ncGTW can detect the misaligned feature groups by XCMS, and the user can

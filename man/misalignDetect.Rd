@@ -14,8 +14,8 @@ misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
 \item{xcmsSmallWin}{A \code{\link[xcms]{xcmsSet-class}} object with a smaller
 \code{bw}, usually the resolution of the retension time.}
 
-\item{ppm}{Should set as same as the one in the input
-\code{\link[xcms]{xcmsSet-class}} objects.}
+\item{ppm}{Should be set as same as the one when performing the peak
+detection function in \code{xcms}.}
 
 \item{qThre}{The threshould of the p-value after multiple test correction.
 The default is 0.05.}
@@ -24,8 +24,8 @@ The default is 0.05.}
 for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
-A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like matrix with
-  all detected misaligned peak groups.
+A \code{group} slot in \code{\link[xcms]{xcmsSet-class}}-like matrix
+  with all detected misaligned peak groups.
 }
 \description{
 This function detects the misaligned peak groups with two

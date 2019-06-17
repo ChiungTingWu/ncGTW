@@ -7,25 +7,23 @@
 compCV(XCMSresFilled, na.rm = FALSE)
 }
 \arguments{
-\item{XCMSresFilled}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{XCMSresFilled}{A \code{\link[xcms]{xcmsSet-class}} object.}
 
-\item{na.rm}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{na.rm}{Omit the samples in which the feature is not detected, and the
+default is FALSE.}
 }
 \value{
-A object with all
-detected misaligned peak groups.
+A vector of the same length as the row number of the \code{group}
+  slot in \code{XCMSresFilled}, in which each element is the CV.
 }
 \description{
-This function calculates the p-value of each peak group in the
- with the smaller "bw" parameter,
-and finds the corresponding peak group in the
- with the larger "bw" parameter.
+This function calculates the coefficient of variation of each feature.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function calculates the coefficient of variation of each
+  feature across all the samples. If a sample is detected with more than one
+  peaks in the feature, the function will pick the one with the highest
+  intensity value.
 }
 \examples{
 # obtain data

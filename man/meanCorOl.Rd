@@ -7,25 +7,23 @@
 meanCorOl(ncGTWinput, sampleRt)
 }
 \arguments{
-\item{ncGTWinput}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
+the needed information for realignment.}
 
-\item{sampleRt}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{sampleRt}{A list of the same length as the sample number in which each
+element is a vector corresponding to the sample raw/adjusted RT.}
 }
 \value{
-A  object with all
-detected misaligned peak groups.
+A list in which the first element is average pairwise correlation,
+  and the second one is average overlapping area.
 }
 \description{
-This function calculates the p-value of each peak group in the
- with the smaller "bw" parameter,
-and finds the corresponding peak group in the
- with the larger "bw" parameter.
+This function computes average pairwise correlation and overlapping area of
+each sample pair.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function computes the pairwise correlation and overlapping area
+  of each sample pair from the input feature, and then takes average.
 }
 \examples{
 # obtain data
@@ -45,7 +43,8 @@ tempInd <- matrix(0, length(file), 1)
 for (n in 1:length(file)){
   tempCha <- file[n]
   tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+                           tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]

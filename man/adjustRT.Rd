@@ -7,29 +7,29 @@
 adjustRT(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm)
 }
 \arguments{
-\item{xcmsLargeWin}{A  object with a larger bw, usually the maximum expected
-retension time drift.}
+\item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object.}
 
-\item{ncGTWinput}{A object with a smaller bw, usually the resolution of the
-retension time.}
+\item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
+the needed information for realignment.}
 
-\item{ncGTWoutput}{A  object with a larger bw, usually the maximum expected
-retension time drift.}
+\item{ncGTWoutput}{A list return by \code{\link{ncGTWalign}}, which contains
+the realignment result.}
 
-\item{ppm}{A object with a smaller bw, usually the resolution of the
-retension time.}
+\item{ppm}{Should be set as same as the one when performing the peak
+detection function in \code{xcms}.}
 }
 \value{
-A  object with all detected misaligned peak groups.
+A list with two elements. The first element is the new warping
+  functions of all samples, and the second one is a matrix of peak
+  information with new RT positions.
 }
 \description{
-This function calculates the p-value of each peak group in the with the
-smaller "bw" parameter, and finds the corresponding peak group in the with
-the larger "bw" parameter.
+This function produces the new warping functions (RT lists) with the
+realignment result.
 }
 \details{
-This function includes two major steps to determine a peak group is
-  misaligned or not.
+This function produces the new warping functions (RT lists) with the
+  realignment result.
 }
 \examples{
 # obtain data
@@ -49,7 +49,8 @@ tempInd <- matrix(0, length(file), 1)
 for (n in 1:length(file)){
   tempCha <- file[n]
   tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+                           tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]

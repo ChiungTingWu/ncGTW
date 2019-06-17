@@ -8,34 +8,30 @@ ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
   bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
 }
 \arguments{
-\item{ncGTWinput}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
+the needed information for realignment.}
 
-\item{xcmsLargeWin}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object.}
 
-\item{parSamp}{A  object with
-a larger bw, usually the maximum expected retension time drift.}
+\item{parSamp}{Decide how many samples are in each group when considering
+parallel computing, and the default is 10.}
 
-\item{bpParam}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{bpParam}{A object of \pkg{BiocParallel} to control parallel processing,
+and can be created by \code{\link[BiocParallel]{SerialParam}},
+\code{\link[BiocParallel]{MulticoreParam}}, or
+\code{\link[BiocParallel]{SnowParam}}.}
 
-\item{ncGTWparam}{A
-object with a smaller bw, usually the resolution of the retension time.}
+\item{ncGTWparam}{A list contains more parameters of ncGTW alignment.}
 }
 \value{
-A  object with all
-detected misaligned peak groups.
+A list contains the realignment result of the input feature.
 }
 \description{
-This function calculates the p-value of each peak group in the
- with the smaller "bw" parameter,
-and finds the corresponding peak group in the
- with the larger "bw" parameter.
+This function applies ncGTW alignment to the input feature.
 }
 \details{
-This function includes two major steps to determine a peak group is
-misaligned or not.
+This function realign the input feature with ncGTW alignment
+  function with given m/z and RT range.
 }
 \examples{
 # obtain data
@@ -55,7 +51,8 @@ tempInd <- matrix(0, length(file), 1)
 for (n in 1:length(file)){
   tempCha <- file[n]
   tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+                           tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]

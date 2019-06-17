@@ -67,7 +67,8 @@ tempInd <- matrix(0, length(file), 1)
 for (n in 1:length(file)){
   tempCha <- file[n]
   tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7, tempLen - 6))
+  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+                                  tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
