@@ -14,16 +14,16 @@ default is FALSE.}
 }
 \value{
 A vector of the same length as the row number of the \code{group}
-  slot in \code{XCMSresFilled}, in which each element is the CV.
+slot in \code{XCMSresFilled}, in which each element is the CV.
 }
 \description{
 This function calculates the coefficient of variation of each feature.
 }
 \details{
 This function calculates the coefficient of variation of each
-  feature across all the samples. If a sample is detected with more than one
-  peaks in the feature, the function will pick the one with the highest
-  intensity value.
+feature across all the samples. If a sample is detected with more than one
+peaks in the feature, the function will pick the one with the highest
+intensity value.
 }
 \examples{
 # obtain data

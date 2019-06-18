@@ -5,7 +5,7 @@
 \title{Run ncGTW alignment}
 \usage{
 ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
-  bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
+    bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
 }
 \arguments{
 \item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
@@ -31,7 +31,7 @@ This function applies ncGTW alignment to the input feature.
 }
 \details{
 This function realign the input feature with ncGTW alignment
-  function with given m/z and RT range.
+function with given m/z and RT range.
 }
 \examples{
 # obtain data
@@ -48,11 +48,11 @@ filepath <- system.file("extdata", package = "ncGTW")
 file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 
 tempInd <- matrix(0, length(file), 1)
-for (n in 1:length(file)){
-  tempCha <- file[n]
-  tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-                           tempLen - 6))
+for (n in seq_along(file)){
+    tempCha <- file[n]
+    tempLen <- nchar(tempCha)
+    tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+        tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -61,7 +61,7 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 # run ncGTW alignment
-ncGTWoutputs <- vector('list', dim(excluGroups)[1])
-for (n in 1:dim(excluGroups)[1])
- ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+ncGTWoutputs <- vector('list', length(ncGTWinputs))
+for (n in seq_along(ncGTWinputs))
+    ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
 }

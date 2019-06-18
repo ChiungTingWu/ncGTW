@@ -5,7 +5,7 @@
 \title{Load sample profiles for each peak group}
 \usage{
 loadProfile(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-  profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
+    profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
 }
 \arguments{
 \item{filePaths}{The character vector of the loading file paths.}
@@ -30,14 +30,14 @@ and can be created by \code{\link[BiocParallel]{SerialParam}},
 }
 \value{
 A list of the same length as the row number of \code{excluGroups},
-  the components of each element is as following:
+the components of each element is as following:
 
-  \item{groupInfo}{The peak group information from \code{excluGroups}.}
+    \item{groupInfo}{The peak group information from \code{excluGroups}.}
 
-  \item{profiles}{The loaded intensity matrix with row as sample, column as
-  RT.}
+    \item{profiles}{The loaded intensity matrix with row as sample, column as
+    RT.}
 
-  \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
+    \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
 }
 \description{
 This function loads each raw sample profiles from the file with certain m/z
@@ -45,9 +45,9 @@ and RT range.
 }
 \details{
 This function obtains the extracted ion chromatogram for each sample
-  at the givin m/z and RT range with a certain m/z bin size for integration.
-  Considering there may be missing peak by peak detection, \code{mzAdd} and
-  \code{rtAdd} are to increase the integration range.
+at the givin m/z and RT range with a certain m/z bin size for integration.
+Considering there may be missing peak by peak detection, \code{mzAdd} and
+\code{rtAdd} are to increase the integration range.
 }
 \examples{
 # obtain data
@@ -64,11 +64,11 @@ filepath <- system.file("extdata", package = "ncGTW")
 file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 
 tempInd <- matrix(0, length(file), 1)
-for (n in 1:length(file)){
-  tempCha <- file[n]
-  tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-                                  tempLen - 6))
+for (n in seq_along(file)){
+    tempCha <- file[n]
+    tempLen <- nchar(tempCha)
+    tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+        tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]

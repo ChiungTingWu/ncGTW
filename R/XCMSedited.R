@@ -3,8 +3,8 @@
 
 fillPeaksChromPar <- function(arg) {
 
-    suppressMessages(requireNamespace("xcms", quietly = TRUE))
-    suppressMessages(requireNamespace("ncGTW", quietly = TRUE))
+    suppressMessages(requireNamespace("xcms", quietly=TRUE))
+    suppressMessages(requireNamespace("ncGTW", quietly=TRUE))
     print('This is edited from XCMS (fillPeaksChromPar).....')
 
     params <- arg$params
@@ -18,7 +18,7 @@ fillPeaksChromPar <- function(arg) {
     expand.rt <- params$expand.rt
     gvals <- params$gvals$gvals
 
-    lcraw <- xcmsRaw(arg$file, profmethod=params$prof$method, profstep = 0)
+    lcraw <- xcmsRaw(arg$file, profmethod=params$prof$method, profstep=0)
 
     if (length(params$dataCorrection) > 1) {
         ## Note: dataCorrection (as set in the xcmsSet function) is either
@@ -30,7 +30,7 @@ fillPeaksChromPar <- function(arg) {
     if (exists("params$polarity") && length(params$polarity) > 0) {
         if (length(params$polarity) > 0) {
             ## Retain wanted polarity only
-            lcraws <- split(lcraw, lcraw@polarity, DROP = TRUE)
+            lcraws <- split(lcraw, lcraw@polarity, DROP=TRUE)
             lcraw <- lcraws[[params$polarity]]
         }
     }
@@ -59,8 +59,8 @@ fillPeaksChromPar <- function(arg) {
 
     naidx <- which(is.na(gvals[,myID]))
 
-    newpeaks <- getPeaksncGTW(lcraw, peakrange[naidx,,drop = FALSE],
-                              step = prof$step, naidx)
+    newpeaks <- getPeaksncGTW(lcraw, peakrange[naidx, , drop=FALSE],
+        step=prof$step, naidx)
 
 
 
@@ -68,12 +68,12 @@ fillPeaksChromPar <- function(arg) {
 }
 
 
-getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
-    suppressMessages(requireNamespace("xcms", quietly = TRUE))
+getPeaksncGTW <- function(object, peakrange, step=0.1, naidx) {
+    suppressMessages(requireNamespace("xcms", quietly=TRUE))
     print('ncGTW fillpeaks\n')
     ## Here we're avoiding the profFun call.
     if (all(c("mzmin","mzmax","rtmin","rtmax") %in% colnames(peakrange)))
-        peakrange <- peakrange[,c("mzmin","mzmax","rtmin","rtmax"),drop = FALSE]
+        peakrange <- peakrange[,c("mzmin","mzmax","rtmin","rtmax"), drop=FALSE]
     stime <- object@profparam
 
     pi <- profinfo(object)
@@ -101,7 +101,7 @@ getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
                                         mzrange. = NULL)
     brks <- pMat$breaks
     pMat <- pMat$profMat  ## rows are masses, cols are retention times/scans.
-    bin_size <- diff(brks[1:2])
+    bin_size <- diff(brks[c(1,2)])
     bin_half <- bin_size / 2
     ## Calculate the mean mass per bin using the breaks used for the binning.
     ## Note: these define the real mass breaks as they have been used for the
@@ -152,11 +152,11 @@ getPeaksncGTW <- function(object, peakrange, step = 0.1, naidx) {
         ## position of the largest intensity!
         if (is.nan(rmat[i,1]) || is.na(rmat[i,1])) ##  R2.11 :  weighted.mean()
             ## results in NA (not NaN) for zero weights
-            rmat[i, 1] <- mean(peakrange[i, 1:2])
+            rmat[i, 1] <- mean(peakrange[i, c(1,2)])
 
-        rmat[i, 2:3] <- peakrange[i, 1:2]            ## mzmin, mzmax
+        rmat[i, 2:3] <- peakrange[i, c(1,2)]            ## mzmin, mzmax
         rmat[i, 4] <- stime_temp[idx_iret][iymax] ## rt
-        rmat[i, 5:6] <- peakrange[i, 3:4]            ## rtmin, rtmax
+        rmat[i, 5:6] <- peakrange[i, c(3,4)]            ## rtmin, rtmax
 
         if (peakrange[i, 3] <  stime_temp[1] ||
             peakrange[i, 4] > stime_temp[length(stime_temp)] ||

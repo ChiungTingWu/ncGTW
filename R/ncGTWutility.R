@@ -7,9 +7,9 @@
 #' @param sampleRt A list of the same length as the sample number in which each
 #'   element is a vector corresponding to the sample raw/adjusted RT.
 #' @details This function computes the pairwise correlation and overlapping area
-#'   of each sample pair from the input feature, and then takes average.
+#' of each sample pair from the input feature, and then takes average.
 #' @return A list in which the first element is average pairwise correlation,
-#'   and the second one is average overlapping area.
+#' and the second one is average overlapping area.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -25,11 +25,11 @@
 #' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 #'
 #' tempInd <- matrix(0, length(file), 1)
-#' for (n in 1:length(file)){
-#'   tempCha <- file[n]
-#'   tempLen <- nchar(tempCha)
-#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-#'                            tempLen - 6))
+#' for (n in seq_along(file)){
+#'     tempCha <- file[n]
+#'     tempLen <- nchar(tempCha)
+#'     tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+#'         tempLen - 6))
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -39,10 +39,11 @@
 #'
 #' XCMSCor <- matrix(0, length(ncGTWinputs), 1)
 #' XCMSOl <- matrix(0, length(ncGTWinputs), 1)
-#' for (n in 1:length(ncGTWinputs)){
-#'  XCMSmean <- meanCorOl(ncGTWinputs[[n]], xcmsLargeWin@rt$corrected)
-#'  XCMSCor[n] <- XCMSmean$cor
-#'  XCMSOl[n] <- XCMSmean$ol
+#' for (n in seq_along(ncGTWinputs)){
+#'     XCMSmean <- meanCorOl(ncGTWinputs[[n]],
+#'         slot(xcmsLargeWin, 'rt')$corrected)
+#'     XCMSCor[n] <- XCMSmean$cor
+#'     XCMSOl[n] <- XCMSmean$ol
 #' }
 #' @export
 
@@ -51,25 +52,25 @@ meanCorOl <- function(ncGTWinput, sampleRt){
     pointNum <- dim(ncGTWinput$rtRaw)[2]
     profiles <- ncGTWinput$profiles
     rtRange <- matrix(0, samNum, pointNum)
-    for (n in 1:samNum){
+    for (n in seq_len(samNum)){
         profiles[n, ] <- gaussFilter(profiles[n, ])
         rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
     }
     proInter <- matrix(0, samNum, pointNum * 10)
     interX <- seq(max(rtRange[ , 1]), min(rtRange[ , pointNum]),
-                  length.out = pointNum * 10)
-    for (n in 1:samNum)
+        length.out=pointNum * 10)
+    for (n in seq_len(samNum))
         proInter[n, ] <- approx(rtRange[n, ], profiles[n, ], interX,
-                                yleft = NA, yright = NA)$y
+                                yleft=NA, yright=NA)$y
     corM <- cor(t(proInter))
     olM <- matrix(0, samNum, samNum)
-    for (i in 1:samNum)
+    for (i in seq_len(samNum))
         for (j in i:samNum){
             olM[i, j] <- sum(pmin(proInter[i, ], proInter[j, ])) /
                 min(sum(proInter[i, ]), sum(proInter[j, ]))
             olM[j, i] <- olM[i, j]
         }
-    return(list(cor = mean(corM), ol = mean(olM)))
+    return(list(cor=mean(corM), ol=mean(olM)))
 }
 
 
@@ -80,11 +81,11 @@ meanCorOl <- function(ncGTWinput, sampleRt){
 #' @param na.rm Omit the samples in which the feature is not detected, and the
 #'   default is FALSE.
 #' @details This function calculates the coefficient of variation of each
-#'   feature across all the samples. If a sample is detected with more than one
-#'   peaks in the feature, the function will pick the one with the highest
-#'   intensity value.
+#' feature across all the samples. If a sample is detected with more than one
+#' peaks in the feature, the function will pick the one with the highest
+#' intensity value.
 #' @return A vector of the same length as the row number of the \code{group}
-#'   slot in \code{XCMSresFilled}, in which each element is the CV.
+#' slot in \code{XCMSresFilled}, in which each element is the CV.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -100,13 +101,13 @@ compCV <- function(XCMSresFilled, na.rm = FALSE){
     XCMSpeaks <- matrix(0, groupNum, sampleNum)
     XCMScv <- matrix(0, groupNum, 1)
 
-    for (n in 1:groupNum){
+    for (n in seq_len(groupNum)){
         XCMSgroupPeaks <- XCMSresFilled@peaks[XCMSresFilled@groupidx[[n]], ]
 
         XCMSonePeak <- matrix(0, sampleNum, dim(XCMSresFilled@peaks)[2])
         colnames(XCMSonePeak) <- colnames(XCMSgroupPeaks)
 
-        for (m in 1:sampleNum){
+        for (m in seq_len(sampleNum)){
             XCMSpeakInd <- which(XCMSgroupPeaks[, 'sample'] == m)
             XCMSpeakInd <- XCMSpeakInd[which.max(XCMSgroupPeaks[XCMSpeakInd,
                                                                 'into'])]
@@ -126,7 +127,7 @@ compCV <- function(XCMSresFilled, na.rm = FALSE){
 
 
 
-gaussFilter <- function(prof, sig = 1){
+gaussFilter <- function(prof, sig=1){
     sz <- ceiling(sig * 6)    # length of gaussian filter vector
     if (sz < 2){
         sz <- 2
@@ -134,10 +135,10 @@ gaussFilter <- function(prof, sig = 1){
     if (sz %% 2 != 0){
         sz <- sz + 1
     }
-    x <- seq(-sz / 2, sz / 2, length = sz + 1)
+    x <- seq(-sz / 2, sz / 2, length=sz + 1)
     filterVec <- exp(-x ^ 2 / (2 * sig ^ 2))
     filterVec <- filterVec / sum (filterVec) # normalize
-    filtered <- convolve(prof, filterVec, type = 'open')
+    filtered <- convolve(prof, filterVec, type='open')
     return(filtered[(sz / 2 + 1):(length(filtered) - sz / 2)])
 }
 
@@ -155,7 +156,7 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
 
     prePeaks <- peaks[groupidx[[groupInd]], ]
     prePeaks <- round(prePeaks[is.element(prePeaks[ , 'sample'], sampleInd), ,
-                               drop = FALSE], digits = 4)
+        drop=FALSE], digits = 4)
 
     if (length(prePeaks) == 0){
         return(matrix(-1, 3, 3))
@@ -163,7 +164,7 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
         if (dim(prePeaks)[1] > 1)
             prePeaks <-
                 prePeaks[!duplicated(prePeaks[,c('rt', 'rtmax', 'rtmin')]), ,
-                         drop = FALSE]
+                    drop = FALSE]
         prePeakInd <- prePeaks[ , 'sample']
         prePeakMed <- prePeaks[, 'rt']
 
@@ -177,7 +178,7 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
         if (length(groupSam)>1){
             maxRange <- 0
             maxInd <- 0
-            for (ind in 1:length(groupSam)){
+            for (ind in seq_len(length(groupSam))){
                 samPeaks <- prePeaks[prePeakInd ==  groupSam[ind], 'rt']
                 if (max(samPeaks) - min(samPeaks) > maxRange){
                     maxRange <- max(samPeaks) - min(samPeaks)
@@ -187,28 +188,27 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
             groupSam <- if (maxRange == 0) groupSam[1] else maxInd
         }
 
-        kmeansPreInd <- kmeans(prePeaks[, c('rt', 'rtmax', 'rtmin'),
-                                        drop = FALSE],
-                               prePeaks[prePeakInd == groupSam,
-                                        c('rt', 'rtmax', 'rtmin'),
-                                        drop = FALSE])
+        kmeansPreInd <-
+            kmeans(prePeaks[, c('rt', 'rtmax', 'rtmin'), drop=FALSE],
+                prePeaks[prePeakInd == groupSam, c('rt', 'rtmax', 'rtmin'),
+                    drop=FALSE])
 
         oriPeakGroup <- vector('list', groupNum)
         XCMSPeakGroup <- vector('list', groupNum)
         ncGTWPeakGroup <- vector('list', groupNum)
 
-        for (n in 1:groupNum)
+        for (n in seq_len(groupNum))
             XCMSPeakGroup[[n]] <- prePeakMed[kmeansPreInd$cluster == n]
 
         ncGTWPeakMed <- prePeakMed * 0
         oriPeakMed <- prePeakMed * 0
 
-        for (n in 1:length(ncGTWPeakMed)){
+        for (n in seq_len(length(ncGTWPeakMed))){
             samInd <- prePeaks[n, 'sample']
             samSubInd <- which(sampleInd == prePeaks[n, 'sample'])
 
             indDif <- abs(scanRange[samInd, ] - rt2scan(prePeakMed[n],
-                                                        rtXCMS[[samInd]]))
+                rtXCMS[[samInd]]))
             minIndDif <- min(indDif)
             medInd <- which(indDif == minIndDif)
             medInd <- medInd[which.max(dataSub[samSubInd, medInd])]
@@ -233,33 +233,34 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
 
         }
         oriPeakRt <- cbind(oriPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
-                               oriPeakMed,
-                           prePeaks[, 'rtmax'] - prePeakMed + oriPeakMed)
+            oriPeakMed, prePeaks[, 'rtmax'] - prePeakMed + oriPeakMed)
         ncGTWPeakRt <- cbind(ncGTWPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
-                                 ncGTWPeakMed,
-                             prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
+            ncGTWPeakMed, prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
 
-        kmeansOriInd <- kmeans(oriPeakRt, oriPeakRt[prePeakInd == groupSam, ,
-                                                    drop = FALSE])
-        kmeansncGTWInd <- kmeans(ncGTWPeakRt,
-                                 ncGTWPeakRt[prePeakInd == groupSam, ,
-                                             drop = FALSE])
+        kmeansOriInd <-
+            kmeans(oriPeakRt, oriPeakRt[prePeakInd == groupSam, , drop=FALSE])
+        kmeansncGTWInd <-
+            kmeans(ncGTWPeakRt, ncGTWPeakRt[prePeakInd == groupSam, ,
+                drop=FALSE])
 
-        for (n in 1:groupNum){
+        for (n in seq_len(groupNum)){
             oriPeakGroup[[n]] <- oriPeakMed[kmeansOriInd$cluster == n]
             ncGTWPeakGroup[[n]] <- ncGTWPeakMed[kmeansncGTWInd$cluster == n]
         }
 
         statResult <- matrix(0, 3, 2)
-        statResult[1, 1] <- sum(sapply(oriPeakGroup, var), na.rm = TRUE)
-        statResult[2, 1] <- sum(sapply(XCMSPeakGroup, var), na.rm = TRUE)
-        statResult[3, 1] <- sum(sapply(ncGTWPeakGroup, var), na.rm = TRUE)
-        statResult[1, 2] <- max(sapply(oriPeakGroup,
-                                       function(x) range(x)[2] - range(x)[1]))
-        statResult[2, 2] <- max(sapply(XCMSPeakGroup,
-                                       function(x) range(x)[2] - range(x)[1]))
-        statResult[3, 2] <- max(sapply(ncGTWPeakGroup,
-                                       function(x) range(x)[2] - range(x)[1]))
+        statResult[1, 1] <- sum(vapply(oriPeakGroup, var,
+            vector("double", groupNum)), na.rm=TRUE)
+        statResult[2, 1] <- sum(vapply(XCMSPeakGroup, var,
+            vector("double", groupNum)), na.rm=TRUE)
+        statResult[3, 1] <- sum(vapply(ncGTWPeakGroup, var,
+            vector("double", groupNum)), na.rm=TRUE)
+        statResult[1, 2] <- max(vapply(oriPeakGroup,
+            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
+        statResult[2, 2] <- max(vapply(XCMSPeakGroup,
+            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
+        statResult[3, 2] <- max(vapply(ncGTWPeakGroup,
+            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
     }
     return(statResult)
 

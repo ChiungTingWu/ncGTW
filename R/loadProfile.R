@@ -18,18 +18,18 @@
 #'   \code{\link[BiocParallel]{SnowParam}}.
 #'
 #' @details This function obtains the extracted ion chromatogram for each sample
-#'   at the givin m/z and RT range with a certain m/z bin size for integration.
-#'   Considering there may be missing peak by peak detection, \code{mzAdd} and
-#'   \code{rtAdd} are to increase the integration range.
+#' at the givin m/z and RT range with a certain m/z bin size for integration.
+#' Considering there may be missing peak by peak detection, \code{mzAdd} and
+#' \code{rtAdd} are to increase the integration range.
 #' @return A list of the same length as the row number of \code{excluGroups},
-#'   the components of each element is as following:
+#' the components of each element is as following:
 #'
-#'   \item{groupInfo}{The peak group information from \code{excluGroups}.}
+#'     \item{groupInfo}{The peak group information from \code{excluGroups}.}
 #'
-#'   \item{profiles}{The loaded intensity matrix with row as sample, column as
-#'   RT.}
+#'     \item{profiles}{The loaded intensity matrix with row as sample, column as
+#'     RT.}
 #'
-#'   \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
+#'     \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -45,11 +45,11 @@
 #' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 #'
 #' tempInd <- matrix(0, length(file), 1)
-#' for (n in 1:length(file)){
-#'   tempCha <- file[n]
-#'   tempLen <- nchar(tempCha)
-#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-#'                                   tempLen - 6))
+#' for (n in seq_along(file)){
+#'     tempCha <- file[n]
+#'     tempLen <- nchar(tempCha)
+#'     tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+#'         tempLen - 6))
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -58,16 +58,15 @@
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #' @export
 
-loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-                        profstep = 0.01, BPPARAM =
-                            BiocParallel::SnowParam(workers = 1)){
+loadProfile <- function(filePaths, excluGroups, mzAdd=0.005, rtAdd=10,
+    profstep=0.01, BPPARAM=BiocParallel::SnowParam(workers=1)){
     groupNum <- dim(excluGroups)[1]
     fileNum <- length(filePaths)
 
-    mzRange <- excluGroups[,c('mzmin', 'mzmax'), drop = FALSE]
+    mzRange <- excluGroups[,c('mzmin', 'mzmax'), drop=FALSE]
     mzRange[,'mzmin'] <- mzRange[,'mzmin'] - mzAdd
     mzRange[,'mzmax'] <- mzRange[,'mzmax'] + mzAdd
-    rtRange <- excluGroups[,c('rtmin', 'rtmax'), drop = FALSE]
+    rtRange <- excluGroups[,c('rtmin', 'rtmax'), drop=FALSE]
     rtRange[,'rtmin'] <- rtRange[,'rtmin'] - rtAdd
     rtRange[,'rtmax'] <- rtRange[,'rtmax'] + rtAdd
 
@@ -76,8 +75,7 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
     eicList <-
         suppressWarnings(
             BiocParallel::bplapply(filePaths, loadEic, mzRange,
-                                       rtRange, profstep, BPPARAM = BPPARAM)
-        )
+            rtRange, profstep, BPPARAM=BPPARAM))
     t2 <- Sys.time()
     print(t2 -t1)
 
@@ -86,27 +84,27 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
     if ('index' %in% colnames(excluGroups)){
         groupInd <- excluGroups[, 'index']
     } else{
-        groupInd <- 1:nrow(excluGroups)
+        groupInd <- seq_len(nrow(excluGroups))
     }
     names(groupProf) <- paste0('group', groupInd)
     names(groupRt) <- names(groupProf)
 
     maxMinArr <- array(0, c(groupNum, fileNum, 2))
-    for (i in 1:groupNum){
-        for (j in 1:fileNum){
+    for (i in seq_len(groupNum)){
+        for (j in seq_len(fileNum)){
             maxMinArr[i, j, 1] <- min(eicList[[j]][[i]][,1])
             maxMinArr[i, j, 2] <- max(eicList[[j]][[i]][,1])
         }
     }
 
     maxMinMat <- matrix(0, groupNum, 2)
-    maxMinMat[, 1] <- apply(maxMinArr[ , , 1, drop = FALSE], 1, max)
-    maxMinMat[, 2] <- apply(maxMinArr[ , , 2, drop = FALSE], 1, min)
+    maxMinMat[, 1] <- apply(maxMinArr[ , , 1, drop=FALSE], 1, max)
+    maxMinMat[, 2] <- apply(maxMinArr[ , , 2, drop=FALSE], 1, min)
 
     maxMinInd <- array(0, c(groupNum, fileNum, 2))
     LenMat <- matrix(0, groupNum, fileNum)
-    for (i in 1:groupNum){
-        for (j in 1:fileNum){
+    for (i in seq_len(groupNum)){
+        for (j in seq_len(fileNum)){
             maxMinInd[i, j, 1] <-
                 which.min(abs(eicList[[j]][[i]][, 1] - maxMinMat[i, 1]))
             maxMinInd[i, j, 2] <-
@@ -116,7 +114,7 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
     }
 
     LenVec <- matrix(0, groupNum, 1)
-    for (n in 1:groupNum){
+    for (n in seq_len(groupNum)){
         if (length(unique(LenMat[n,])) != 1){
             warning('The RT resolution may not be same for some samples...')
             LenVec[n] <- min(LenMat[n,])
@@ -125,10 +123,10 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
         }
     }
 
-    for (i in 1:groupNum){
+    for (i in seq_len(groupNum)){
         groupProf[[i]] <- matrix(0, fileNum, LenVec[i])
         groupRt[[i]] <- matrix(0, fileNum, LenVec[i])
-        for (j in 1:fileNum){
+        for (j in seq_len(fileNum)){
             rtProf <- eicList[[j]][[i]][maxMinInd[i, j, 1]:
                                             (maxMinInd[i, j, 1] +
                                                 LenVec[i] - 1), ]
@@ -138,13 +136,13 @@ loadProfile <- function(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
     }
 
     ncGTWinputs <- vector('list', groupNum)
-    for (n in 1:groupNum){
+    for (n in seq_len(groupNum)){
         groupInfo <- excluGroups[n, ]
         if (!'index' %in% names(groupInfo))
-            groupInfo <- c(index = n, groupInfo)
-        ncGTWinputs[[n]] <- list(groupInfo = groupInfo,
-                                     profiles = groupProf[[n]],
-                                         rtRaw = groupRt[[n]])
+            groupInfo <- c(index=n, groupInfo)
+        ncGTWinputs[[n]] <- list(groupInfo=groupInfo,
+                                profiles=groupProf[[n]],
+                                rtRaw=groupRt[[n]])
     }
 
     return(ncGTWinputs)
@@ -162,7 +160,7 @@ loadEic <- function(filePath, mzRange, rtRange, profstep){
 
     rawEic <- vector('list', dim(mzRange)[1])
 
-    for (n in 1: dim(mzRange)[1]){
+    for (n in seq_len(dim(mzRange)[1])){
         tempEic <- xcms::rawEIC(rawProf, mzRange[n, ], rtRange[n, ])
         rawEic[[n]] <- cbind(tempEic$scan, tempEic$intensity)
     }

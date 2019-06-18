@@ -16,47 +16,47 @@ splitGroupPval(xcmsLargeWin, xcmsSmallWin)
 \value{
 A list containing the following components:
 
-  \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
+    \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
 
-  \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
+    \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
 
-  \item{largeWinGroupidx}{The peak indexes in each peak group in
-  \code{xcmsLargeWin}.}
+    \item{largeWinGroupidx}{The peak indexes in each peak group in
+    \code{xcmsLargeWin}.}
 
-  \item{smallWinGroupidx}{The peak indexes in each peak group in
-  \code{xcmsSmallWin}.}
+    \item{smallWinGroupidx}{The peak indexes in each peak group in
+    \code{xcmsSmallWin}.}
 
-  \item{largeWinSampleidx}{The corresponding sample indexes for each peak
-  group in \code{xcmsLargeWin}.}
+    \item{largeWinSampleidx}{The corresponding sample indexes for each peak
+    group in \code{xcmsLargeWin}.}
 
-  \item{smallWinSampleidx}{The corresponding sample indexes for each peak
-  group in \code{xcmsSmallWin}.}
+    \item{smallWinSampleidx}{The corresponding sample indexes for each peak
+    group in \code{xcmsSmallWin}.}
 
-  \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
-  for each peak group in \code{xcmsLargeWin}.}
+    \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
+    for each peak group in \code{xcmsLargeWin}.}
 
-  \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin} which
-  has a corresponding group in \code{xcmsLargeWin}. The p-value of group in
-  \code{xcmsSmallWin} with no corresponding group in \code{xcmsLargeWin} is
-  not important.}
+    \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin}
+    which has a corresponding group in \code{xcmsLargeWin}. The p-value of
+    group in \code{xcmsSmallWin} with no corresponding group in
+    \code{xcmsLargeWin} is not important.}
 
-  \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
+    \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
 
-  \item{pvalues}{The adjusted p-value of each peak group in
-  \code{xcmsSmallWin}.}
+    \item{pvalues}{The adjusted p-value of each peak group in
+    \code{xcmsSmallWin}.}
 
-  \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
-  groups in \code{xcmsLargeWin} (the smallest one among the corresponding
-  peak groups in \code{xcmsSmallWin}).}
+    \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
+    groups in \code{xcmsLargeWin} (the smallest one among the corresponding
+    peak groups in \code{xcmsSmallWin}).}
 }
 \description{
 This function calculates the p-value of each peak group.
 }
 \details{
 This function calculates the p-value of each peak group in the
-  \code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
-  finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
-  with the larger \code{bw} parameter.
+\code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
+finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
+with the larger \code{bw} parameter.
 }
 \examples{
 # obtain data

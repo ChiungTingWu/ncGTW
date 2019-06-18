@@ -12,7 +12,7 @@
 #'   \code{\link[BiocParallel]{SnowParam}}.
 #' @param ncGTWparam A list contains more parameters of ncGTW alignment.
 #' @details This function realign the input feature with ncGTW alignment
-#'   function with given m/z and RT range.
+#' function with given m/z and RT range.
 #' @return A list contains the realignment result of the input feature.
 #' @examples
 #' # obtain data
@@ -29,11 +29,11 @@
 #' file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 #'
 #' tempInd <- matrix(0, length(file), 1)
-#' for (n in 1:length(file)){
-#'   tempCha <- file[n]
-#'   tempLen <- nchar(tempCha)
-#'   tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-#'                            tempLen - 6))
+#' for (n in seq_along(file)){
+#'     tempCha <- file[n]
+#'     tempLen <- nchar(tempCha)
+#'     tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+#'         tempLen - 6))
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -42,14 +42,13 @@
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
 #' # run ncGTW alignment
-#' ncGTWoutputs <- vector('list', dim(excluGroups)[1])
-#' for (n in 1:dim(excluGroups)[1])
-#'  ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+#' ncGTWoutputs <- vector('list', length(ncGTWinputs))
+#' for (n in seq_along(ncGTWinputs))
+#'     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
 #' @export
 
-ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
-                       bpParam = BiocParallel::SnowParam(workers = 1),
-                       ncGTWparam = NULL){
+ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
+    bpParam = BiocParallel::SnowParam(workers=1), ncGTWparam=NULL){
 
     downSample <- if (is.null(ncGTWparam$downSample)) 2 else
         ncGTWparam$downSample
@@ -118,35 +117,34 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
     }
 
     tempCount <- 0
-    for (n in 1:parSect){
-        parSpec[1:parNum[n], , n] <-
+    for (n in seq_len(parSect)){
+        parSpec[seq_len(parNum[n]), , n] <-
             data[(tempCount + 1):(tempCount + parNum[n]), ]
-        parInd[1:parNum[n], n] <- (tempCount + 1):(tempCount + parNum[n])
+        parInd[seq_len(parNum[n]), n] <- (tempCount + 1):(tempCount + parNum[n])
         tempCount <- tempCount + parNum[n]
     }
 
     parInfos <- vector('list', parSect)
-    for (n in 1:parSect){
+    for (n in seq_len(parSect)){
         parInfos[[n]]$num <- n
-        parInfos[[n]]$parSpec <- parSpec[1:parNum[n], , n]
+        parInfos[[n]]$parSpec <- parSpec[seq_len(parNum[n]), , n]
         parInfos[[n]]$parNum <- parNum[n]
         parInfos[[n]]$parInd <- parInd[ , n]
     }
 
-    ncGTW1stOutput <- BiocParallel::bplapply(parInfos, ncGTW1stLayer, parSect,
-                                             xcmsLargeWin, groupInd, scanRange,
-                                             mir, strNum, diaNum, noiseVar,
-                                             maxStp, dia, logt, nor, mu, sigma,
-                                             biP, weiP, rangeThre,
-                                             BPPARAM = bpParam)
+    ncGTW1stOutput <-
+        BiocParallel::bplapply(parInfos, ncGTW1stLayer, parSect,
+            xcmsLargeWin, groupInd, scanRange, mir, strNum, diaNum, noiseVar,
+            maxStp, dia, logt, nor, mu, sigma, biP, weiP, rangeThre,
+            BPPARAM=bpParam)
 
     parPath <- replicate(parSect, list(vector('list', parSamp)))
     parWarped <- array(0, c(parSamp, specLen, parSect))
     parStat <- array(0, c(3, 3, parSect))
 
-    for (n in 1:parSect){
+    for (n in seq_len(parSect)){
         parPath[[n]] <- ncGTW1stOutput[[n]]$parPath
-        parWarped[1:parNum[n] , , n] <- ncGTW1stOutput[[n]]$parWarped
+        parWarped[seq_len(parNum[n]) , , n] <- ncGTW1stOutput[[n]]$parWarped
         parStat[ , , n] <- ncGTW1stOutput[[n]]$parStat
     }
 
@@ -155,17 +153,19 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
 
     if (parSect == 1){
         warning('Only one layer!!!')
-        path2 <- list(cbind(0:specLen, 0:specLen, 1:(specLen+1), 1:(specLen+1)))
+        path2 <-
+            list(cbind(0:specLen, 0:specLen,
+                seq_len((specLen+1)), seq_len((specLen+1))))
         warpedAll <- parWarped[ , , 1]
         smoM2 <- matrix(0, 3, 6)
     }
 
-    for (n in 1:parSect){
+    for (n in seq_len(parSect)){
         maxInd <- which.max(rowSums(parWarped[ , , n], 2))
         minInd <- which.min(rowSums(parWarped[ , , n], 2))
-        superSample[n, ] <- colMeans(parWarped[setdiff(1:parNum[n],
-                                                       c(maxInd, minInd)),
-                                               , n, drop = FALSE])
+        superSample[n, ] <-
+            colMeans(parWarped[setdiff(seq_len(parNum[n]), c(maxInd, minInd)),
+                , n, drop=FALSE])
         # super_sample(n, :) = super_sample(n, :)/max(super_sample(n, :));
     }
 
@@ -188,21 +188,23 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
 
         param <- initGtwParam(validMap, noiseVar, maxStp, 10^-32, dia, logt,nor)
         gtwInfo <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP,weiP)
-        eeBet <- gtwInfo$ee[(gtwInfo$nEdgeGrid * gtwInfo$nPix + 1) :
-                                dim(gtwInfo$ee)[1], ]
+        eeBet <-
+            gtwInfo$ee[(gtwInfo$nEdgeGrid * gtwInfo$nPix + 1) :
+                dim(gtwInfo$ee)[1], ]
 
         param <- initGtwParam(validMap, noiseVar, maxStp, 0, dia, logt, nor)
-        gtwInfo0 <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP,
-                                  weiP)
+        gtwInfo0 <-
+            buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP)
         cut0 <- graphCut(gtwInfo0$ss, gtwInfo0$ee)
         costMin <- cut0[length(cut0)]
         s1BrokenNum <- sum((cut0[eeBet[ ,1]] + cut0[eeBet[ ,2]]) == 1)
         s1BrokenNumFinal <- s1BrokenNum
 
-        param <- initGtwParam(validMap, noiseVar, maxStp, 100000000000, dia,
-                              logt, nor)
-        gtwInfoMerge <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP,
-                                      weiP, 2)
+        param <-
+            initGtwParam(validMap, noiseVar, maxStp, 100000000000, dia,
+                logt, nor)
+        gtwInfoMerge <-
+            buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP, 2)
         cutMerge <- graphCut(gtwInfoMerge$ss, gtwInfoMerge$ee)
         costMax <- cutMerge[length(cutMerge)]
         smoTemp <- (costMax - costMin) / s1BrokenNum
@@ -217,13 +219,14 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
         tempPath <- vector('list', dim(smoM2)[1])
 
 
-        for (smo in 1:dim(smoM2)[1]){
-            param <- initGtwParam(validMap, noiseVar, maxStp, smoM2[smo, 1],
-                                  dia, logt, nor)
+        for (smo in seq_len(dim(smoM2)[1])){
+            param <-
+                initGtwParam(validMap, noiseVar, maxStp, smoM2[smo, 1],
+                    dia, logt, nor)
             # fprintf('%-80s%20s\n', ...
             # sprintf('Built the structure of GTW 1st stage.'))
-            gtwInfo <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP,
-                                     weiP)
+            gtwInfo <-
+                buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP)
             #     fprintf('%-80s%20s\n', ...
             #         sprintf('Converted to the 1st maximum flow.'))
             cut <- graphCut(gtwInfo$ss, gtwInfo$ee)
@@ -234,9 +237,9 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
             sampNum2 <- dim(superSample)[1]
             #    zero_line = zeros([size(samp_num2,1)-1,spec_len]);
             validMap2 <- matrix(0, sampNum2, sampNum2)
-            for (jj in 1:sampNum2)
+            for (jj in seq_len(sampNum2))
                 for (ii in seq(jj + 1, sampNum2,
-                               length = max(0, sampNum2 - jj)))
+                    length = max(0, sampNum2 - jj)))
                     validMap2[ii, jj] <- 1
 
             maxStp2 <- maxStp
@@ -244,10 +247,12 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
             ref2 <- tst2
 
             smoothnessV2 <- 0.00001 / noiseVar
-            param2 <- initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2,
-                                   dia, logt, nor)
-            gtwInfo2 <- buildGTWgraph(ref2, tst2, validMap2, param2, mu, sigma,
-                                      biP, weiP, 1, path1, gtwPrep$pairMap)
+            param2 <-
+                initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2, dia,
+                    logt, nor)
+            gtwInfo2 <-
+                buildGTWgraph(ref2, tst2, validMap2, param2, mu, sigma,
+                    biP, weiP, 1, path1, gtwPrep$pairMap)
             cut2 <- graphCut(gtwInfo2$ss, gtwInfo2$ee)
             s2BrokenNum <- cut2[length(cut2)] / smoothnessV2
             s2BrokenNumFinal <- s2BrokenNum
@@ -264,10 +269,12 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
             smo2 <- 50
 
             smoothnessV2 <- s2Final / noiseVar * smo2 / 50
-            param2 <- initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2,
-                                   dia, logt, nor)
-            gtwInfo2 <- buildGTWgraph( ref2, tst2, validMap2, param2,mu, sigma,
-                                       biP, weiP, 1, path1, gtwPrep$pairMap)
+            param2 <-
+                initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2,
+                    dia, logt, nor)
+            gtwInfo2 <-
+                buildGTWgraph(ref2, tst2, validMap2, param2,mu, sigma,
+                    biP, weiP, 1, path1, gtwPrep$pairMap)
             # fprintf('%-80s%20s\n', ...
             # sprintf('Converted to the 2nd maximum flow.'))
 
@@ -280,8 +287,9 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
             tempPath[[smo]] <- path2
             temp2path <- pathCombine(parPath, path2, parInd)
 
-            statResult <- smoTest(xcmsLargeWin, groupInd, data, scanRange,
-                                  1:dataNum, temp2path)
+            statResult <-
+                smoTest(xcmsLargeWin, groupInd, data, scanRange,
+                    seq_len(dataNum), temp2path)
             tempRange <- statResult[3, 2]
             # tempVar = statResult[3, 3]
             # tempRange = 999
@@ -309,30 +317,32 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp = 10,
         bestSmo <- which.min(smoM2[ , 3])  #+ smoM2[ , 4])
         path2 <- tempPath[[bestSmo]]
 
-        for (m in 1:parSect)
+        for (m in seq_len(parSect))
             parSuperWarped[m, ] <- warpCurve(superSample[m, ], path2[[m]])
 
 
         warpedAll <- matrix(0, dim(data)[1], dim(data)[2])
         tempCount <- 0
-        for (n in 1:parSect){
-            for (m in 1:parNum[n])
-                warpedAll[tempCount + m, ] <- warpCurve(parWarped[m, , n],
-                                                        path2[[n]])
+        for (n in seq_len(parSect)){
+            for (m in seq_len(parNum[n]))
+                warpedAll[tempCount + m, ] <-
+                    warpCurve(parWarped[m, , n], path2[[n]])
             tempCount <- tempCount + parNum[n]
         }
     }
-    return(list(parPath = parPath, path2 = path2, parStat = parStat,
-                parInd = parInd, smoM2 = smoM2, data = data,
-                scanRange= scanRange, warpedAll = warpedAll,
-                downSample = downSample))
+    return(
+        list(parPath = parPath, path2 = path2, parStat = parStat,
+            parInd = parInd, smoM2 = smoM2, data = data,
+            scanRange= scanRange, warpedAll = warpedAll,
+            downSample = downSample))
 }
 
 
 
-ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
-                          mir, strNum, diaNum, noiseVar, maxStp, dia, logt, nor,
-                          mu, sigma, biP, weiP, rangeThre){
+ncGTW1stLayer <-
+    function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
+        mir, strNum, diaNum, noiseVar, maxStp, dia, logt, nor,
+        mu, sigma, biP, weiP, rangeThre){
     # suppressPackageStartupMessages({require(ncGTW)})
     n <- parInfo$num
     # cat(format(Sys.time()), 'Zero', n, 'of', parSect, '\n')
@@ -340,16 +350,18 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
     parnum <- parInfo$parNum
     parind <- parInfo$parInd
     # cat(format(Sys.time()), 'First', n, 'of', parSect, '\n')
-    gtwPrep <- buildMultiParaValidmap(parspec[1:parnum, ],
-                                      mir, strNum, diaNum, biP)
+    gtwPrep <-
+        buildMultiParaValidmap(parspec[seq_len(parnum), ],
+            mir, strNum, diaNum, biP)
     ref <- gtwPrep$ref
     tst <- gtwPrep$tst
     validMap <- gtwPrep$validMap
 
     param <- initGtwParam(validMap, noiseVar, maxStp, 10^-32, dia, logt, nor)
     gtwInfo <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP)
-    eeBet <- gtwInfo$ee[(gtwInfo$nEdgeGrid * gtwInfo$nPix + 1) :
-                            dim(gtwInfo$ee)[1], ]
+    eeBet <-
+        gtwInfo$ee[(gtwInfo$nEdgeGrid * gtwInfo$nPix + 1) :
+            dim(gtwInfo$ee)[1], ]
 
     param <- initGtwParam(validMap, noiseVar, maxStp, 0, dia, logt, nor)
     gtwInfo0 <- buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP)
@@ -359,8 +371,8 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
     parS1BrokenNum <- s1BrokenNum #####
     # cat(format(Sys.time()), 'Second', n, 'of', parSect, '\n')
     param <- initGtwParam(validMap, noiseVar, maxStp, 10^32, dia, logt, nor)
-    gtwInfoMerge <- buildGTWgraph( ref, tst, validMap, param, mu, sigma, biP,
-                                   weiP, 2)
+    gtwInfoMerge <-
+        buildGTWgraph( ref, tst, validMap, param, mu, sigma, biP, weiP, 2)
     cutMerge <- graphCut(gtwInfoMerge$ss, gtwInfoMerge$ee)
     costMax <- cutMerge[length(cutMerge)]
     smoTemp <- (costMax - costMin) / s1BrokenNum
@@ -371,14 +383,15 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
     tempPath <- vector('list', dim(smoM)[1])
 
     # cat(format(Sys.time()), 'Third', n, 'of', parSect, '\n')
-    for (smo in 1:dim(smoM)[1]){
-        param <- initGtwParam(validMap, noiseVar, maxStp, smoM[smo, 1], dia,
-                              logt, nor)
+    for (smo in seq_len(dim(smoM)[1])){
+        param <-
+            initGtwParam(validMap, noiseVar, maxStp, smoM[smo, 1], dia,
+                logt, nor)
         cat(format(Sys.time()), 'Built the structure of ncGTW stage 1, section',
             n, 'of', parSect, '\n')
 
-        gtwInfo <- buildGTWgraph(ref, tst, validMap, param, mu, sigma,
-                                 biP, weiP)
+        gtwInfo <-
+            buildGTWgraph(ref, tst, validMap, param, mu, sigma, biP, weiP)
         cat(format(Sys.time()), 'Converted to the 1st maximum flow, section', n,
             'of', parSect, '\n')
 
@@ -399,20 +412,23 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
 
         # zero_line = zeros([size(par_t_M,1)-1,spec_len]);
         validMap2 <- matrix(0, parnum, parnum)
-        for (jj in 1:parnum)
+        for (jj in seq_len(parnum))
             for (ii in seq((jj + 1), parnum, length = max(0, parnum - jj)))
                 validMap2[ii, jj] <- 1
 
         maxStp2 <- maxStp
-        tst2 <- matrix(0, dim(parspec[1:parnum, ])[1],
-                       dim(parspec[1:parnum, ])[2])
+        tst2 <-
+            matrix(0, dim(parspec[seq_len(parnum), ])[1],
+                dim(parspec[seq_len(parnum), ])[2])
         ref2 <- tst2
 
         smoothnessV2 <- 0.0000000001 / noiseVar
-        param2 <- initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2, dia,
-                               logt, nor)
-        gtwInfo2 <- buildGTWgraph(ref2, tst2, validMap2, param2, mu, sigma, biP,
-                                  weiP, 1, path1, gtwPrep$pairMap)
+        param2 <-
+            initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2, dia,
+                logt, nor)
+        gtwInfo2 <-
+            buildGTWgraph(ref2, tst2, validMap2, param2, mu, sigma, biP,
+                weiP, 1, path1, gtwPrep$pairMap)
         cut2 <- graphCut(gtwInfo2$ss, gtwInfo2$ee)
 
         s2BrokenNum <- cut2[length(cut2)] / smoothnessV2
@@ -426,10 +442,12 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
         #sprintf('Obtained the range of the total cost,
         # section %d of %d.', n, par_sect), datestr(datetime()));
 
-        param2 <- initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2,
-                               dia, logt, nor)
-        gtwInfo2 <- buildGTWgraph( ref2, tst2, validMap2, param2,mu, sigma,
-                                   biP, weiP, 1, path1, gtwPrep$pairMap)
+        param2 <-
+            initGtwParam(validMap2, noiseVar, maxStp2, smoothnessV2,
+                dia, logt, nor)
+        gtwInfo2 <-
+            buildGTWgraph( ref2, tst2, validMap2, param2,mu, sigma,
+                biP, weiP, 1, path1, gtwPrep$pairMap)
 
         #fprintf('%-80s%20s\n', ...
         #        sprintf('Converted to the 2nd maximum flow,
@@ -443,8 +461,9 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
         path2 <- label2path(cut2, gtwInfo2)
         tempPath[[smo]] <- path2
 
-        statResult <- smoTest(xcmsLargeWin, groupInd, parspec[1:parnum, ],
-                              scanRange, parind[1:parnum], path2)
+        statResult <-
+            smoTest(xcmsLargeWin, groupInd, parspec[seq_len(parnum),],
+                scanRange, parind[seq_len(parnum)], path2)
         tempRange <- statResult[3, 2]
 
         brokenNum1 <- sum((cut[eeBet[ ,1]] + cut[eeBet[ ,2]]) == 1)
@@ -476,20 +495,21 @@ ncGTW1stLayer <- function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
 
 
     tempWarped <- parspec * 0
-    for (m in 1:parnum)
+    for (m in seq_len(parnum))
         tempWarped[m, ] <- warpCurve(parspec[m, ], path2[[m]])
 
     parwarped <- tempWarped
 
     tempPath2 <- vector('list', dim(parspec)[1])
-    tempPath2[1:parnum] <- path2
+    tempPath2[seq_len(parnum)] <- path2
 
     parpath <- tempPath2
     parstat <- smoM
 
-    return(list(parPath = parpath, parWarped = parwarped, parStat = parstat,
-                parS1BrokenNum = parS1BrokenNum,
-                parS2BrokenNum = parS2BrokenNum, parS2 = parS2))
+    return(
+        list(parPath = parpath, parWarped = parwarped, parStat = parstat,
+            parS1BrokenNum = parS1BrokenNum,
+            parS2BrokenNum = parS2BrokenNum, parS2 = parS2))
 
 }
 

@@ -20,8 +20,8 @@ detection function in \code{xcms}.}
 }
 \value{
 A list with two elements. The first element is the new warping
-  functions of all samples, and the second one is a matrix of peak
-  information with new RT positions.
+functions of all samples, and the second one is a matrix of peak
+information with new RT positions.
 }
 \description{
 This function produces the new warping functions (RT lists) with the
@@ -29,7 +29,7 @@ realignment result.
 }
 \details{
 This function produces the new warping functions (RT lists) with the
-  realignment result.
+realignment result.
 }
 \examples{
 # obtain data
@@ -46,11 +46,11 @@ filepath <- system.file("extdata", package = "ncGTW")
 file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 
 tempInd <- matrix(0, length(file), 1)
-for (n in 1:length(file)){
-  tempCha <- file[n]
-  tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-                           tempLen - 6))
+for (n in seq_along(file)){
+    tempCha <- file[n]
+    tempLen <- nchar(tempCha)
+    tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+        tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -59,26 +59,27 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 # run ncGTW alignment
-ncGTWoutputs <- vector('list', dim(excluGroups)[1])
-for (n in 1:dim(excluGroups)[1])
- ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+ncGTWoutputs <- vector('list', length(ncGTWinputs))
+for (n in seq_along(ncGTWinputs))
+    ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
 
 # adjust RT with the realignment results from ncGTW
 ncGTWres <- xcmsLargeWin
-ncGTWRt <- vector('list', dim(excluGroups)[1])
-for (n in 1:dim(excluGroups)[1]){
-  adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
-  ncGTWres@peaks <- adjustRes$peaks
-  ncGTWRt[[n]] <- adjustRes$rtncGTW
+ncGTWRt <- vector('list', length(ncGTWinputs))
+for (n in seq_along(ncGTWinputs)){
+    adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
+    xcms::peaks(ncGTWres) <- adjustRes$peaks
+    ncGTWRt[[n]] <- adjustRes$rtncGTW
 }
 
-# apply the adjusted RT to a \\code{\\link[xcms]{xcmsSet-class}} object
- ncGTWres@groups <- excluGroups[ , 2:9]
- ncGTWres@groupidx <- xcmsLargeWin@groupidx[excluGroups[ , 1]]
- ncGTWres@rt$corrected <- vector('list', length(ncGTWres@filepaths))
- for (n in 1:length(ncGTWres@filepaths)){
-   ncGTWres@rt$corrected[[n]] <- vector('list', dim(excluGroups)[1])
-   for (m in 1:dim(ncGTWres@groups)[1])
-     ncGTWres@rt$corrected[[n]][[m]] <- ncGTWRt[[m]][[n]]
- }
+# apply the adjusted RT to a xcmsSet object
+xcms::groups(ncGTWres) <- excluGroups[ , 2:9]
+xcms::groupidx(ncGTWres) <- xcms::groupidx(xcmsLargeWin)[excluGroups[ , 1]]
+rtCor <- vector('list', length(xcms::filepaths(ncGTWres)))
+for (n in seq_along(file)){
+    rtCor[[n]] <- vector('list', dim(excluGroups)[1])
+    for (m in seq_len(dim(excluGroups)[1]))
+        rtCor[[n]][[m]] <- ncGTWRt[[m]][[n]]
+}
+slot(ncGTWres, 'rt')$corrected <- rtCor
 }

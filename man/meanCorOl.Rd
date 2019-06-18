@@ -15,7 +15,7 @@ element is a vector corresponding to the sample raw/adjusted RT.}
 }
 \value{
 A list in which the first element is average pairwise correlation,
-  and the second one is average overlapping area.
+and the second one is average overlapping area.
 }
 \description{
 This function computes average pairwise correlation and overlapping area of
@@ -23,7 +23,7 @@ each sample pair.
 }
 \details{
 This function computes the pairwise correlation and overlapping area
-  of each sample pair from the input feature, and then takes average.
+of each sample pair from the input feature, and then takes average.
 }
 \examples{
 # obtain data
@@ -40,11 +40,11 @@ filepath <- system.file("extdata", package = "ncGTW")
 file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 
 tempInd <- matrix(0, length(file), 1)
-for (n in 1:length(file)){
-  tempCha <- file[n]
-  tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-                           tempLen - 6))
+for (n in seq_along(file)){
+    tempCha <- file[n]
+    tempLen <- nchar(tempCha)
+    tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+        tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -54,9 +54,10 @@ ncGTWinputs <- loadProfile(file, excluGroups)
 
 XCMSCor <- matrix(0, length(ncGTWinputs), 1)
 XCMSOl <- matrix(0, length(ncGTWinputs), 1)
-for (n in 1:length(ncGTWinputs)){
- XCMSmean <- meanCorOl(ncGTWinputs[[n]], xcmsLargeWin@rt$corrected)
- XCMSCor[n] <- XCMSmean$cor
- XCMSOl[n] <- XCMSmean$ol
+for (n in seq_along(ncGTWinputs)){
+    XCMSmean <- meanCorOl(ncGTWinputs[[n]],
+        slot(xcmsLargeWin, 'rt')$corrected)
+    XCMSCor[n] <- XCMSmean$cor
+    XCMSOl[n] <- XCMSmean$ol
 }
 }

@@ -11,7 +11,7 @@ buildMultiParaValidmap <- function(samples, mir, strNum, diaNum, biP = TRUE) {
         tst <- matrix(0, sampNum * ( sampNum - 1) / 2, sampLen)
         ref <- tst
 
-        for (jj in 1:sampNum){
+        for (jj in seq_len(sampNum)){
             for (ii in seq(jj+1,sampNum,length = max(0,sampNum-jj))){
                 pairNum <- pairNum + 1
                 pairMap[ii, jj] <- pairNum
@@ -23,8 +23,8 @@ buildMultiParaValidmap <- function(samples, mir, strNum, diaNum, biP = TRUE) {
         tst <- matrix(0, sampNum * ( sampNum - 1), sampLen)
         ref <- tst
 
-        for (jj in 1:sampNum)
-            for (ii in 1:sampNum)
+        for (jj in seq_len(sampNum))
+            for (ii in seq_len(sampNum))
                 if (ii != jj){
                     pairNum <- pairNum + 1
                     pairMap[ii, jj] <- pairNum
@@ -37,12 +37,12 @@ buildMultiParaValidmap <- function(samples, mir, strNum, diaNum, biP = TRUE) {
     validMap <- matrix(0, pairNum, pairNum)
     eachMap <- array(0, c(sampNum, sampNum, pairNum))
 
-    for (n in 1:pairNum)
-        for (m in 1:sampNum)
+    for (n in seq_len(pairNum))
+        for (m in seq_len(sampNum))
             eachMap[m, m, n] <- NA
 
-    for (jj in 1:sampNum)
-        for (ii in 1:sampNum)
+    for (jj in seq_len(sampNum))
+        for (ii in seq_len(sampNum))
             if (pairMap[ii,jj] != 0){
                 eachMap[ii, jj, pairMap[ii, jj]] <- -1
                 strEnd <- min(ii + strNum, sampNum)
@@ -102,7 +102,7 @@ buildMultiParaValidmap <- function(samples, mir, strNum, diaNum, biP = TRUE) {
                 for (kkk in seq(1,kk,length = max(0,kk)))
                     if (pairMap[ii + kkk, jj + kkk] != 0){
                         validMap[pairMap[ii + kkk, jj + kkk],
-                                 pairMap[ii, jj] ] <- 1
+                            pairMap[ii, jj] ] <- 1
                         eachMap[ii + kkk, jj + kkk, pairMap[ii, jj]] <- 1
                         eachMap[ii, jj, pairMap[ii + kkk, jj + kkk]] <- 1
                     }
@@ -112,8 +112,9 @@ buildMultiParaValidmap <- function(samples, mir, strNum, diaNum, biP = TRUE) {
 }
 
 
-initGtwParam <- function(validMap, noiseVar, maxStp, smo = 1,
-                         diagonalPenalty = 0, logt = 0, nor = 2) {
+initGtwParam <-
+    function(validMap, noiseVar, maxStp, smo = 1,
+        diagonalPenalty = 0, logt = 0, nor = 2) {
 
     tmpEast <- validMap * 1
     tmpSouth <- validMap * 1
@@ -196,9 +197,9 @@ getDistMat <- function(ref, tst, refP, tstP, biP, weiP, nor) {
     return(dM)
 }
 
-buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
-                          biP = TRUE, weiP = 0, type = 0, path = NA,
-                          pairMap = NA) {
+buildGTWgraph <-
+    function(ref, tst, validMap, param, mu=0, sigma=1,
+        biP=TRUE, weiP=0, type=0, path=NA, pairMap=NA) {
 
     smoMap <- param$smoMap
     smoBase <- param$smoBase
@@ -236,12 +237,12 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
         refP <- matrix(0, dim(ref)[1], dim(ref)[2])
         tstP <- matrix(0, dim(tst)[1], dim(tst)[2])
         if (logt == 0){
-            for (n in 1:nPix){
+            for (n in seq_len(nPix)){
                 refP[n, ] <- 1 - pnorm(log(ref[n, ]+1), mu[n], sigma[n])
                 tstP[n, ] <- 1 - pnorm(log(tst[n, ]+1), mu[n], sigma[n])
             }
         } else if (logt == 1){
-            for (n in 1:nPix){
+            for (n in seq_len(nPix)){
                 refP[n, ] <- 1 - pnorm(ref[n, ], mu(n), sigma(n))
                 tstP[n, ] <- 1 - pnorm(tst[n, ], mu(n), sigma(n))
             }
@@ -253,12 +254,12 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
 
 
     distMask <- matrix(0, nTps, nTps)
-    for (ii in 1:nTps)
-        for (jj in 1:nTps)
+    for (ii in seq_len(nTps))
+        for (jj in seq_len(nTps))
             distMask[ii, jj] <- ofstPen * (abs(ii - jj) > 0)
 
     diagMask <- matrix(0, nTps, nTps)
-    for (ii in 1:nTps)
+    for (ii in seq_len(nTps))
         diagMask[ii,ii] <- diagonalPenalty
 
 
@@ -303,11 +304,11 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
     srcNode <- nNodeGrid * nPix + 1
     sinkNode <- nNodeGrid * nPix + 2
 
-    mapObj <- as.list(c(sinkNode, 1:nNodeGrid, srcNode))
+    mapObj <- as.list(c(sinkNode, seq_len(nNodeGrid), srcNode))
     names(mapObj) <- tmpUniq
 
-    dEdgeInt <- apply(tmp, 1:2, function(x) mapObj[[as.character(x)]])
-    dEdge1 <- rbind(dEdge[ ,1:2], dEdge[ ,3:4])
+    dEdgeInt <- apply(tmp, c(1,2), function(x) mapObj[[as.character(x)]])
+    dEdge1 <- rbind(dEdge[ ,c(1,2)], dEdge[ ,3:4])
     nodePos <- dEdge1[ia[2:(length(ia)-1)], ]
 
     ## split the edge matrix to src/sink and within grid
@@ -330,8 +331,9 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
 
     # edges between nodes (except src and sink)
     idxNotSS <- d1 != srcNode & d2 != sinkNode
-    eeTmp <- cbind(dEdgeInt[idxNotSS, ], wtPos1[idxNotSS, ],
-                   weightVal[idxNotSS], weightValMul[idxNotSS])
+    eeTmp <-
+        cbind(dEdgeInt[idxNotSS, ], wtPos1[idxNotSS, ],
+            weightVal[idxNotSS], weightValMul[idxNotSS])
     nEdgeGrid <- dim(eeTmp)[1]
 
     # output, for label and path mapping
@@ -355,7 +357,7 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
     eePair[ ,4] <- capRev
 
 
-    for (ii in 1:nPix){
+    for (ii in seq_len(nPix)){
 
         s2x <- s2[ii]
 
@@ -375,11 +377,12 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
             dp <- dp / s2x + distMask
         } else{
             if (dim(ref)[1] == 1){
-                dM <- getDistMat(ref, tst[ii, ], refP, tstP[ii, ],
-                                 biP, weiP, nor)
+                dM <-
+                    getDistMat(ref, tst[ii, ], refP, tstP[ii, ], biP, weiP, nor)
             } else {
-                dM <- getDistMat(ref[ii, ], tst[ii, ], refP[ii, ],
-                                 tstP[ii, ], biP, weiP, nor)
+                dM <-
+                    getDistMat(ref[ii, ], tst[ii, ], refP[ii, ], tstP[ii, ],
+                        biP, weiP, nor)
             }
             d0 <- dM[,,1, drop = TRUE]
             dp <- dM[,,2, drop = TRUE]
@@ -395,34 +398,34 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
             matrix(d0ext[as.vector(ssTmpPos)] + as.vector(ssTmpWt), nNodeGrid,2)
         # edges between nodes
         tmp <- matrix(0, dim(eeTmp)[1], 3)
-        tmp[eeTmp[ , 4] == 2, ] <- cbind(eeTmp[eeTmp[ , 4] == 2, 1:2] + ssOfst,
-                                         (dpext[eeTmp[eeTmp[ ,4] == 2, 3]] +
-                                              eeTmp[eeTmp[ , 4] == 2, 5]) *
-                                             eeTmp[eeTmp[, 4] == 2, 6])
-        tmp[eeTmp[ , 4] != 2, ] <- cbind(eeTmp[eeTmp[ , 4] != 2, 1:2] + ssOfst,
-                                         (d0ext[eeTmp[eeTmp[ ,4] != 2, 3]] +
-                                              eeTmp[eeTmp[ , 4] != 2, 5]) *
-                                             eeTmp[eeTmp[ ,4] != 2, 6])
+        tmp[eeTmp[ , 4] == 2, ] <-
+            cbind(eeTmp[eeTmp[ , 4] == 2, c(1,2)] + ssOfst,
+                (dpext[eeTmp[eeTmp[ , 4] == 2, 3]] +
+                    eeTmp[eeTmp[ , 4] == 2, 5]) * eeTmp[eeTmp[, 4] == 2, 6])
+        tmp[eeTmp[ , 4] != 2, ] <-
+            cbind(eeTmp[eeTmp[ , 4] != 2, c(1,2)] + ssOfst,
+                (d0ext[eeTmp[eeTmp[ ,4] != 2, 3]] +
+                    eeTmp[eeTmp[ , 4] != 2, 5]) * eeTmp[eeTmp[ ,4] != 2, 6])
         if (type == 2){
-            eePair[ ,1:2] <- tmp[ ,1:2]
+            eePair[ ,c(1,2)] <- tmp[ ,c(1,2)]
             eePair[ ,3] <- eePair[ ,3] + tmp[ ,3]
         } else{
-            eePair[(eeOfst + 1):(eeOfst + nEdgeGrid), 1:3] <- tmp
+            eePair[(eeOfst + 1):(eeOfst + nEdgeGrid), c(1,2,3)] <- tmp
         }
     }
 
     ## edges for between pairs
     if (smoBase > 0 && type == 0){
         nn <- 0
-        for (jj in 1:nPix){
+        for (jj in seq_len(nPix)){
             for (ii in seq(jj + 1, nPix, length = max(0, nPix - jj))){
                 if (validMap[ii, jj] == 1){
                     idx1 <- nn + 1
                     idx2 <- nn + nNodeGrid
                     eePair[(idx1:idx2) + nPix * nEdgeGrid, 1] <- (jj - 1) *
-                        nNodeGrid + (1:nNodeGrid)
+                        nNodeGrid + (seq_len(nNodeGrid))
                     eePair[(idx1:idx2) + nPix * nEdgeGrid, 2] <- (ii - 1) *
-                        nNodeGrid + (1:nNodeGrid)
+                        nNodeGrid + (seq_len(nNodeGrid))
                     smo0 <- smoMap[ii, jj, 2]
                     # smo0 = min(smoMap(ii,jj),smoMap(ii+1,jj))
                     eePair[(idx1:idx2) + nPix * nEdgeGrid, 3:4] <- smo0
@@ -444,10 +447,10 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
 
         ll <- dim(dEdgeInt)[1]
         tdP2 <- cbind(dEdge[trunc(ia / ll) * ll + ia],
-                      dEdge[trunc(ia / ll + 1) * ll + ia])
+            dEdge[trunc(ia / ll + 1) * ll + ia])
         GridMap <- matrix(0, 2 * nTps, 2 * nTps)
 
-        for (ii in 1:(dim(tdP2)[1] - 2)){
+        for (ii in seq_len(dim(tdP2)[1] - 2)){
             if (round(tdP2[ii, 1] / 0.5) != tdP2[ii, 1] / 0.5){
                 if (round(tdP2[ii, 2] / 0.5) != tdP2[ii, 2] / 0.5){
                     GridMap[tdP2[ii, 1] * 2 - 0.5, tdP2[ii, 2] * 2 - 0.5] <- ii
@@ -458,7 +461,7 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
         outIdx <- matrix(TRUE, nTps * nTps * 4 * nNeibPair, 1)
 
         nn <- 0
-        for (jj in 1:nPix){
+        for (jj in seq_len(nPix)){
             for (ii in seq(jj + 1, nPix, length = max(0, nPix - jj))){
                 if (validMap[ii, jj] == 1){
                     nowIdx <- jj
@@ -471,7 +474,7 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
                     gtwEdgePP <- matrix(0, nTps * nTps * 4, 2)
                     # outIdxt = zeros(nTps*nTps*4, 1)
                     gtwEdge[ ,3] <- 1
-                    for (kk in 1:dim(tmpPath)[1]){
+                    for (kk in seq_len(dim(tmpPath)[1])){
                         if ((tmpPath[kk, 1] !=0 && tmpPath[kk, 2] !=0)){
                             tmpSp <- nTps * 4 * (tmpPath[kk, 2] - 1)
 
@@ -494,12 +497,11 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
                     outIdxt <- gtwEdge[ , 1] != 0 & gtwEdge[ , 2] != 0
                     gtwEdge[outIdxt, 3] <-
                         min((1 - pnorm(log(tst[nowIdx,
-                                               gtwEdgePP[outIdxt, 1]] + 1),
-                                       mu[nowIdx],
-                                       sigma[nowIdx])) ^ weiP,
+                            gtwEdgePP[outIdxt, 1]] + 1), mu[nowIdx],
+                            sigma[nowIdx])) ^ weiP,
                             (1 - pnorm(log(tst[tgtIdx,
-                                               gtwEdgePP[outIdxt, 2]] + 1),
-                                       mu[tgtIdx], sigma[tgtIdx])) ^ weiP)
+                            gtwEdgePP[outIdxt, 2]] + 1),
+                            mu[tgtIdx], sigma[tgtIdx])) ^ weiP)
 
                     gtwEdge[gtwEdge[ , 3] == 0, 3] <- 1 / capRev
 
@@ -524,14 +526,15 @@ buildGTWgraph <- function(ref, tst, validMap, param, mu = 0, sigma = 1,
     }
 
 
-    gtwInfo <- list(ss = ss, ee = ee, nodePos = nodePos, weightPos = weightPos,
-                    weightVal = weightVal, pEdge = pEdge, pEdgeSS = pEdgeSS,
-                    pEdgeEE = pEdgeEE, dEdge = dEdge, dEdgeInt = dEdgeInt,
-                    dEdgeIntSS = dEdgeIntSS, dEdgeIntEE = dEdgeIntEE,
-                    validMap = validMap, srcSinkPos = st01, nTps = nTps,
-                    nPix = nPix, nNodeGrid = nNodeGrid,
-                    nNodes = nNodeGrid * nPix + 2, nEdgeGrid = nEdgeGrid,
-                    ssTmpPos = ssTmpPos)
+    gtwInfo <-
+        list(ss = ss, ee = ee, nodePos = nodePos, weightPos = weightPos,
+            weightVal = weightVal, pEdge = pEdge, pEdgeSS = pEdgeSS,
+            pEdgeEE = pEdgeEE, dEdge = dEdge, dEdgeInt = dEdgeInt,
+            dEdgeIntSS = dEdgeIntSS, dEdgeIntEE = dEdgeIntEE,
+            validMap = validMap, srcSinkPos = st01, nTps = nTps,
+            nPix = nPix, nNodeGrid = nNodeGrid,
+            nNodes = nNodeGrid * nPix + 2, nEdgeGrid = nEdgeGrid,
+            ssTmpPos = ssTmpPos)
     #              fprintf('Finished. Time now is %s.\n', datestr(datetime()))
     return(gtwInfo)
 }
@@ -610,8 +613,8 @@ buildPairTemplate <- function(nTps, win, pmCost) {
     }
 
     # within grid
-    for (x0 in 1:nTps)  # ref
-        for (y0 in 1:nTps){  # tst
+    for (x0 in seq_len(nTps))  # ref
+        for (y0 in seq_len(nTps)){  # tst
             if (x0 == nTps && y0 == nTps)
                 next
 
@@ -686,9 +689,9 @@ buildPairTemplate <- function(nTps, win, pmCost) {
             dEdge[nn + 1, ] <- c(s1, nTps + 0.5, nTps + 1 - w + 0.5)
         } else {
             dEdge[nn, ] <- c(nTps + 1 - w + 0.5, nTps + 0.5, nTps + 1 - w - 0.5,
-                             nTps + 0.5)
+                nTps + 0.5)
             dEdge[nn + 1, ] <- c(nTps + 0.5, nTps + 1 - w - 0.5, nTps + 0.5,
-                                 nTps + 1 - w + 0.5)
+                nTps + 1 - w + 0.5)
         }
         cPos[nn, ] <- c(nTps - w + 1, nTps)
         cPos[nn+1, ] <- c(nTps, nTps - w + 1)
@@ -699,5 +702,5 @@ buildPairTemplate <- function(nTps, win, pmCost) {
     }
 
     return(list(pEdge = pEdge, dEdge = dEdge, cPos = cPos, cVal = cVal,
-                st01 = st01, eType = eType))
+        st01 = st01, eType = eType))
 }

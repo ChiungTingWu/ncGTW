@@ -7,5 +7,5 @@
 #' @name xcmsExamples
 #' @usage data(xcmsExamples)
 #' @format A list with two \code{\link[xcms]{xcmsSet-class}} objects and one
-#'   \code{ppm} parameter.
+#' \code{ppm} parameter.
 NULL

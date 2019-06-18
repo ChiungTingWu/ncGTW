@@ -5,7 +5,7 @@
 \title{Detect misaligned peak groups in xcmsSet object of XCMS}
 \usage{
 misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
-  maxRtWin = 50)
+    maxRtWin = 50)
 }
 \arguments{
 \item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger
@@ -25,7 +25,7 @@ for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
 A \code{group} slot in \code{\link[xcms]{xcmsSet-class}}-like matrix
-  with all detected misaligned peak groups.
+with all detected misaligned peak groups.
 }
 \description{
 This function detects the misaligned peak groups with two
@@ -34,12 +34,12 @@ This function detects the misaligned peak groups with two
 }
 \details{
 This function includes two major steps to determine a peak group is
-  misaligned or not. The first step calculates the p-value of each peak group
-  in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
-  This step is implemented in \code{\link{splitGroupPval}}. The second step
-  is to find the exclusive peak groups (the groups with no overlapping
-  samples) with adjsted p-values smaller than \code{qThre}. The second step
-  is implemented in \code{\link{exclusiveGroups}}.
+misaligned or not. The first step calculates the p-value of each peak group
+in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
+This step is implemented in \code{\link{splitGroupPval}}. The second step
+is to find the exclusive peak groups (the groups with no overlapping
+samples) with adjsted p-values smaller than \code{qThre}. The second step
+is implemented in \code{\link{exclusiveGroups}}.
 }
 \examples{
 # obtain data

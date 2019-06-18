@@ -4,9 +4,9 @@
 \alias{plotGroup}
 \title{Plot profiles for each peak group}
 \usage{
-plotGroup(ncGTWinput, sampleRt, sampleInd = 1:dim(ncGTWinput$rtRaw)[1],
-  ind = NULL, savePath = NULL, show = TRUE, sub = TRUE,
-  filter = FALSE)
+plotGroup(ncGTWinput, sampleRt,
+    sampleInd = seq_len(dim(ncGTWinput$rtRaw)[1]), ind = NULL,
+    savePath = NULL, show = TRUE, sub = TRUE, filter = FALSE)
 }
 \arguments{
 \item{ncGTWinput}{An object return by \code{\link{loadProfile}} of sample
@@ -40,8 +40,8 @@ This function plots sample profiles with loaded information.
 }
 \details{
 This function plots the extracted ion chromatogram obtained by
-  \code{\link{loadProfile}}. The user can decide to save the figure, show the
-  figure, or apply a Gaussian filter on the data by parameter setting.
+\code{\link{loadProfile}}. The user can decide to save the figure, show the
+figure, or apply a Gaussian filter on the data by parameter setting.
 }
 \examples{
 # obtain data
@@ -58,11 +58,11 @@ filepath <- system.file("extdata", package = "ncGTW")
 file <- list.files(filepath, pattern="mzxml", full.names=TRUE)
 
 tempInd <- matrix(0, length(file), 1)
-for (n in 1:length(file)){
-  tempCha <- file[n]
-  tempLen <- nchar(tempCha)
-  tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
-                                  tempLen - 6))
+for (n in seq_along(file)){
+    tempCha <- file[n]
+    tempLen <- nchar(tempCha)
+    tempInd[n] <- as.numeric(substr(tempCha, regexpr("example", tempCha) + 7,
+        tempLen - 6))
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
@@ -71,6 +71,6 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 # plot all loaded features
-for (n in 1:length(ncGTWinputs))
-  plotGroup(ncGTWinputs[[n]], xcmsLargeWin@rt$raw)
+for (n in seq_along(ncGTWinputs))
+    plotGroup(ncGTWinputs[[n]], slot(xcmsLargeWin, 'rt')$corrected)
 }

@@ -14,14 +14,14 @@
 #' @param maxRtWin The threshould of the maximum retension time range. This is
 #'   for filtering out some bad groups. The default is 50 (seconds).
 #' @details This function includes two major steps to determine a peak group is
-#'   misaligned or not. The first step calculates the p-value of each peak group
-#'   in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
-#'   This step is implemented in \code{\link{splitGroupPval}}. The second step
-#'   is to find the exclusive peak groups (the groups with no overlapping
-#'   samples) with adjsted p-values smaller than \code{qThre}. The second step
-#'   is implemented in \code{\link{exclusiveGroups}}.
+#' misaligned or not. The first step calculates the p-value of each peak group
+#' in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin.
+#' This step is implemented in \code{\link{splitGroupPval}}. The second step
+#' is to find the exclusive peak groups (the groups with no overlapping
+#' samples) with adjsted p-values smaller than \code{qThre}. The second step
+#' is implemented in \code{\link{exclusiveGroups}}.
 #' @return A \code{group} slot in \code{\link[xcms]{xcmsSet-class}}-like matrix
-#'   with all detected misaligned peak groups.
+#' with all detected misaligned peak groups.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -33,8 +33,8 @@
 #' excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
 #' @export
 
-misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
-                           maxRtWin = 50){
+misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre=0.05,
+    maxRtWin=50){
     groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
     excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
     excluGroups <- excluInfo$excluGroups
@@ -52,43 +52,43 @@ misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
 #' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}} object with a smaller
 #'   \code{bw}, usually the resolution of the retension time.
 #' @details This function calculates the p-value of each peak group in the
-#'   \code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
-#'   finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
-#'   with the larger \code{bw} parameter.
+#' \code{\link[xcms]{xcmsSet-class}} with the smaller \code{bw} parameter, and
+#' finds the corresponding peak group in the \code{\link[xcms]{xcmsSet-class}}
+#' with the larger \code{bw} parameter.
 #' @return A list containing the following components:
 #'
-#'   \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
+#'     \item{largeWinGroups}{The peak groups in \code{xcmsLargeWin}.}
 #'
-#'   \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
+#'     \item{smallWinGroups}{The peak groups in \code{xcmsSmallWin}.}
 #'
-#'   \item{largeWinGroupidx}{The peak indexes in each peak group in
-#'   \code{xcmsLargeWin}.}
+#'     \item{largeWinGroupidx}{The peak indexes in each peak group in
+#'     \code{xcmsLargeWin}.}
 #'
-#'   \item{smallWinGroupidx}{The peak indexes in each peak group in
-#'   \code{xcmsSmallWin}.}
+#'     \item{smallWinGroupidx}{The peak indexes in each peak group in
+#'     \code{xcmsSmallWin}.}
 #'
-#'   \item{largeWinSampleidx}{The corresponding sample indexes for each peak
-#'   group in \code{xcmsLargeWin}.}
+#'     \item{largeWinSampleidx}{The corresponding sample indexes for each peak
+#'     group in \code{xcmsLargeWin}.}
 #'
-#'   \item{smallWinSampleidx}{The corresponding sample indexes for each peak
-#'   group in \code{xcmsSmallWin}.}
+#'     \item{smallWinSampleidx}{The corresponding sample indexes for each peak
+#'     group in \code{xcmsSmallWin}.}
 #'
-#'   \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
-#'   for each peak group in \code{xcmsLargeWin}.}
+#'     \item{matchGroupIdx}{The corresponding peak groups in \code{xcmsSmallWin}
+#'     for each peak group in \code{xcmsLargeWin}.}
 #'
-#'   \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin} which
-#'   has a corresponding group in \code{xcmsLargeWin}. The p-value of group in
-#'   \code{xcmsSmallWin} with no corresponding group in \code{xcmsLargeWin} is
-#'   not important.}
+#'     \item{pvalueIdx}{The index of each peak groups in \code{xcmsSmallWin}
+#'     which has a corresponding group in \code{xcmsLargeWin}. The p-value of
+#'     group in \code{xcmsSmallWin} with no corresponding group in
+#'     \code{xcmsLargeWin} is not important.}
 #'
-#'   \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
+#'     \item{pvalues}{The p-value of each peak group in \code{xcmsSmallWin}.}
 #'
-#'   \item{pvalues}{The adjusted p-value of each peak group in
-#'   \code{xcmsSmallWin}.}
+#'     \item{pvalues}{The adjusted p-value of each peak group in
+#'     \code{xcmsSmallWin}.}
 #'
-#'   \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
-#'   groups in \code{xcmsLargeWin} (the smallest one among the corresponding
-#'   peak groups in \code{xcmsSmallWin}).}
+#'     \item{pqValues}{The matrix of p-value and adjusted p-value of each peak
+#'     groups in \code{xcmsLargeWin} (the smallest one among the corresponding
+#'     peak groups in \code{xcmsSmallWin}).}
 #'
 #' @examples
 #' # obtain data
@@ -107,26 +107,26 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 
     groupLargeSmallIndex <- matrix(0, nrow(xcmsLargeWin@peaks), 2)
 
-    for (i in 1:length(largeWinGroupidx)) {
-        for (j in 1:length(largeWinGroupidx[[i]])){
+    for (i in seq_along(largeWinGroupidx)) {
+        for (j in seq_along(largeWinGroupidx[[i]])){
             groupLargeSmallIndex[largeWinGroupidx[[i]][j], 1] <- i
         }
     }
-    for (i in 1:length(smallWinGroupidx)) {
-        for (j in 1:length(smallWinGroupidx[[i]])){
+    for (i in seq_along(smallWinGroupidx)) {
+        for (j in seq_along(smallWinGroupidx[[i]])){
             groupLargeSmallIndex[smallWinGroupidx[[i]][j], 2] <- i
         }
     }
 
     matchTwoGroup <- matrix(0, length(largeWinGroupidx),
                             length(smallWinGroupidx))
-    for (n in 1:nrow(xcmsLargeWin@peaks)) {
+    for (n in seq_len(nrow(xcmsLargeWin@peaks))) {
         if (groupLargeSmallIndex[n,1] != 0 &
             groupLargeSmallIndex[n,2] != 0) {
             matchTwoGroup[groupLargeSmallIndex[n,1],
-                          groupLargeSmallIndex[n,2]] =
-                matchTwoGroup[groupLargeSmallIndex[n,1],
-                              groupLargeSmallIndex[n,2]] + 1
+            groupLargeSmallIndex[n,2]] =
+            matchTwoGroup[groupLargeSmallIndex[n,1],
+            groupLargeSmallIndex[n,2]] + 1
         }
     }
 
@@ -139,23 +139,24 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 
 
     largeWinSampleidx <- vector('list', length(largeWinGroupidx))
-    for (n in 1:length(largeWinGroupidx)){
-        largeWinSampleidx[[n]] <- xcmsLargeWin@peaks[largeWinGroupidx[[n]],
-                                                     'sample']
+    for (n in seq_along(largeWinGroupidx)){
+        largeWinSampleidx[[n]] <-
+            xcmsLargeWin@peaks[largeWinGroupidx[[n]], 'sample']
     }
 
     smallWinSampleidx <- vector('list', length(smallWinGroupidx))
-    for (n in 1:length(smallWinGroupidx)){
-        smallWinSampleidx[[n]] <- xcmsSmallWin@peaks[smallWinGroupidx[[n]],
-                                                     'sample']
+    for (n in seq_along(smallWinGroupidx)){
+        smallWinSampleidx[[n]] <-
+            xcmsSmallWin@peaks[smallWinGroupidx[[n]], 'sample']
     }
 
     pvalues <- vector('integer', length(smallWinGroupidx)) - 1
     pvalueIdx <- vector('integer', 0)
 
-    for (n in 1:length(smallWinGroupidx)){
+    for (n in seq_along(smallWinGroupidx)){
         if (sum(matchTwoGroup[,n]) > 0){
-       #pvalues[n] <- peakGroupPval(smallWinSampleidx[[n]], sampleNum, testNum)
+            # pvalues[n] <-
+            #     peakGroupPval(smallWinSampleidx[[n]], sampleNum, testNum)
             pvalues[n] <- peakGroupPvalOrder(smallWinSampleidx[[n]], sampleNum)
             pvalueIdx <- c(pvalueIdx, n)
         }
@@ -172,23 +173,24 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 
     pqValues <- matrix(0, length(largeWinGroupidx), 2)
 
-    for (n in 1:length(largeWinGroupidx)){
+    for (n in seq_along(largeWinGroupidx)){
         tempIdx <- matchGroupIdx[[n]]
         if (length(tempIdx) == 0){
-            pqValues[n,1:2] <- 2
+            pqValues[n,c(1,2)] <- 2
         } else{
             pqValues[n, 1] <- min(pvalues[tempIdx])
             pqValues[n, 2] <- min(qvalues[tempIdx])
         }
     }
-    groupInfo <- list(largeWinGroups = xcmsLargeWin@groups,
-                      smallWinGroups = xcmsSmallWin@groups,
-                      largeWinGroupidx = largeWinGroupidx,
-                      smallWinGroupidx = smallWinGroupidx,
-                      largeWinSampleidx = largeWinSampleidx,
-                      smallWinSampleidx = smallWinSampleidx,
-                      matchGroupIdx = matchGroupIdx, pvalueIdx = pvalueIdx,
-                      pvalues = pvalues, qvalues = qvalues, pqValues = pqValues)
+    groupInfo <-
+        list(largeWinGroups = xcmsLargeWin@groups,
+            smallWinGroups = xcmsSmallWin@groups,
+            largeWinGroupidx = largeWinGroupidx,
+            smallWinGroupidx = smallWinGroupidx,
+            largeWinSampleidx = largeWinSampleidx,
+            smallWinSampleidx = smallWinSampleidx,
+            matchGroupIdx = matchGroupIdx, pvalueIdx = pvalueIdx,
+            pvalues = pvalues, qvalues = qvalues, pqValues = pqValues)
 
     return(groupInfo)
 }
@@ -204,18 +206,18 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 #'   \code{\link[xcms]{xcmsSet-class}} object.
 #' @param qThre The threshould of the adjusted p-value of output peak groups.
 #' @details This function finds the groups in \code{largeWinGroups} which has
-#'   corrsponding exclusive peak groups in \code{smallWinGroups}, and output the
-#'   groups with adjusted p-value smaller than \code{qThre}.
+#' corrsponding exclusive peak groups in \code{smallWinGroups}, and output the
+#' groups with adjusted p-value smaller than \code{qThre}.
 #' @return A list containing the following components:
 #'
-#'   \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like
-#'   matrix with all detected misaligned peak groups.}
+#'     \item{excluGroups}{A \code{\link[xcms]{xcmsSet-class}}$\code{group}-like
+#'     matrix with all detected misaligned peak groups.}
 #'
-#'   \item{excluPval}{The adjusted p-values of the groups in
-#'   \code{excluGroups}.}
+#'     \item{excluPval}{The adjusted p-values of the groups in
+#'     \code{excluGroups}.}
 #'
-#'   \item{excluLargeSmall}{The corresponding group indexes of the groups in
-#'   \code{excluGroups}.}
+#'     \item{excluLargeSmall}{The corresponding group indexes of the groups in
+#'     \code{excluGroups}.}
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -237,7 +239,7 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
 
     groups <- groupInfo$smallWinGroups
 
-    for (n in 1:length(groupInfo$largeWinGroupidx)){
+    for (n in seq_along(groupInfo$largeWinGroupidx)){
         tempInd <- groupInfo$matchGroupIdx[[n]]
         tempInd <- tempInd[groupInfo$qvalues[tempInd] < qThre]
 
@@ -245,10 +247,10 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
             tempGroups <- groupInfo$smallWinSampleidx[tempInd]
             tempGroupNum <- length(tempGroups)
 
-            for (i in 1:(tempGroupNum - 1)){
-                for (j in (i+1):tempGroupNum){
+            for (i in seq_len(tempGroupNum - 1)){
+                for (j in seq.int(i+1, tempGroupNum)){
                     if (length(intersect(tempGroups[[i]],
-                                         tempGroups[[j]])) <= 0){
+                        tempGroups[[j]])) <= 0){
                         if (abs(groups[tempInd[i], 'mzmed'] -
                                 groups[tempInd[j], 'mzmed']) /
                             min(groups[tempInd[i], 'mzmed'],
@@ -257,9 +259,9 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
                             excluGroupsNum[n] <- excluGroupsNum[n] + 1
                             ttest <- t.test(tempGroups[[i]], tempGroups[[j]])
                             excluPval[[n]] <- c(excluPval[[n]], ttest$p.value)
-                            excluLargeSmall[[n]] <- cbind(excluLargeSmall[[n]],
-                                                          rbind(tempInd[i],
-                                                                tempInd[j]))
+                            excluLargeSmall[[n]] <-
+                                cbind(excluLargeSmall[[n]],
+                                rbind(tempInd[i], tempInd[j]))
 
 
                         }
@@ -269,13 +271,14 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
             }
         }
     }
-    excluGroups <- cbind(which(excluGroupsNum != 0),
-                         groupInfo$largeWinGroups[which(excluGroupsNum != 0), ,
-                                                  drop = FALSE])
+    excluGroups <-
+        cbind(which(excluGroupsNum != 0),
+            groupInfo$largeWinGroups[which(excluGroupsNum != 0), ,drop=FALSE])
     colnames(excluGroups)[1] <- 'index'
 
-    excluInfo <- list(excluGroups = excluGroups, excluPval = excluPval,
-                      excluLargeSmall = excluLargeSmall)
+    excluInfo <-
+        list(excluGroups = excluGroups, excluPval = excluPval,
+            excluLargeSmall = excluLargeSmall)
 
     return(excluInfo)
 }
@@ -314,16 +317,17 @@ peakGroupPvalOrder <- function(peakIdx, sampleNum) {
 
 peakGroupPval <- function(peakIdx, sampleNum, testNum) {
     peakIdx <- unique(sort(peakIdx))
-    peakIdxDif <- peakIdx[2:length(peakIdx)] - peakIdx[1:(length(peakIdx) - 1)]
+    peakIdxDif <- peakIdx[seq.int(2, length(peakIdx))] -
+        peakIdx[seq_len(length(peakIdx) - 1)]
     testVal <- mean(peakIdxDif)
 
     peakNum <- length(peakIdx)
     nullVal <- vector('numeric', testNum)
 
-    for (n in 1:testNum){
-        nullIdx <- sort(sample(1:sampleNum, peakNum))
-        nullIdxDif <- nullIdx[2:length(nullIdx)] -
-            nullIdx[1:(length(nullIdx) - 1)]
+    for (n in seq_len(testNum)){
+        nullIdx <- sort(sample(seq_len(sampleNum), peakNum))
+        nullIdxDif <- nullIdx[seq.int(2, length(nullIdx))] -
+            nullIdx[seq_len(length(nullIdx) - 1)]
         nullVal[n] <- mean(nullIdxDif)
     }
 
@@ -332,10 +336,5 @@ peakGroupPval <- function(peakIdx, sampleNum, testNum) {
     if (length(peakIdx) == 1){
         pVal <- 1
     }
-
     return(pVal)
 }
-
-
-
-
