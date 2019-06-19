@@ -11,3 +11,6 @@ tempCode
 *.Rproj
 *.Rold
 README.Rmd
+inst/doc
+doc
+Meta
