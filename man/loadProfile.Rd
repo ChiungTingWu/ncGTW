@@ -5,7 +5,7 @@
 \title{Load sample profiles for each peak group}
 \usage{
 loadProfile(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-    profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
+  profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
 }
 \arguments{
 \item{filePaths}{The character vector of the loading file paths.}
@@ -30,14 +30,7 @@ and can be created by \code{\link[BiocParallel]{SerialParam}},
 }
 \value{
 A list of the same length as the row number of \code{excluGroups},
-the components of each element is as following:
-
-    \item{groupInfo}{The peak group information from \code{excluGroups}.}
-
-    \item{profiles}{The loaded intensity matrix with row as sample, column as
-    RT.}
-
-    \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
+in which each element is a \code{\link{ncGTWinput}} object.
 }
 \description{
 This function loads each raw sample profiles from the file with certain m/z

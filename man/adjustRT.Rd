@@ -9,19 +9,15 @@ adjustRT(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm)
 \arguments{
 \item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object.}
 
-\item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
-the needed information for realignment.}
+\item{ncGTWinput}{A \code{\link{ncGTWinput}} object.}
 
-\item{ncGTWoutput}{A list return by \code{\link{ncGTWalign}}, which contains
-the realignment result.}
+\item{ncGTWoutput}{A \code{\link{ncGTWoutput}} object.}
 
 \item{ppm}{Should be set as same as the one when performing the peak
 detection function in \code{xcms}.}
 }
 \value{
-A list with two elements. The first element is the new warping
-functions of all samples, and the second one is a matrix of peak
-information with new RT positions.
+A \code{\link{ncGTWwarp}} object.
 }
 \description{
 This function produces the new warping functions (RT lists) with the
@@ -58,18 +54,22 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 # load the sample profiles
 ncGTWinputs <- loadProfile(file, excluGroups)
 
+# initialize the parameters of ncGTW alignment with default
+ncGTWparam <- initncGTWparam()
+
 # run ncGTW alignment
 ncGTWoutputs <- vector('list', length(ncGTWinputs))
 for (n in seq_along(ncGTWinputs))
-    ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+    ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5,
+        ncGTWparam = ncGTWparam)
 
 # adjust RT with the realignment results from ncGTW
 ncGTWres <- xcmsLargeWin
 ncGTWRt <- vector('list', length(ncGTWinputs))
 for (n in seq_along(ncGTWinputs)){
     adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
-    xcms::peaks(ncGTWres) <- adjustRes$peaks
-    ncGTWRt[[n]] <- adjustRes$rtncGTW
+    xcms::peaks(ncGTWres) <- ncGTWpeaks(adjustRes)
+    ncGTWRt[[n]] <- rtncGTW(adjustRes)
 }
 
 # apply the adjusted RT to a xcmsSet object

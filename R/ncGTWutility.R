@@ -1,9 +1,56 @@
+#' Initialize the parameters of ncGTW alignment
+#'
+#' This function initializes the needed paramters of ncGTW alignment with
+#' defaults.
+#' @param downSample A factor of downsampling. The larger, the faster speed of
+#'   alignment, but the accuracy may decrease. The default is 2.
+#' @param stpRat A factor to control the maximum RT shift of a point in
+#'   alignment, and the maximum shift is determined by \code{stpRat} * "The RT
+#'   range of the feature". If \code{maxStp} is set, then \code{stpRat} would be
+#'   neglected. The default is 0.6.
+#' @param maxStp A value determines the maximum RT shift of a point in ncGTW
+#'   alignment. If the user wants to decide the maximum shif by the RT range of
+#'   the feature, this argument should be NULL. The default is NULL.
+#' @param strNum A value controls how many neighboring warping functions are
+#'   connected to each warping function in ncGTW graph. There are two samples
+#'   corresponding to a warping function, and at least one sample should be the
+#'   same in another warping function to be considered as a neighbor controlled
+#'   by \code{strNum}.
+#' @param diaNum A value controls how many neighboring warping functions are
+#'   connected to each warping function in ncGTW graph. There are two samples
+#'   corresponding to a warping function, and the two samples could also be
+#'   different to another warping function to be considered as a neighbor
+#'   controlled by \code{diaNum}.
+#' @param nor A value controls p-norm to compute the distance between the points
+#'   on the profiles, and the default is 1 (Manhattan norm).
+#' @details This function initializes the needed paramters of ncGTW alignment
+#' with defaults, so this function could be called without any input. The
+#' alignment should be fine with all default parameters. If the computing time
+#' is an issue, the user could consider increase \code{downSample} and/or
+#' decrease \code{stpRat} for a faster speed. If the alignment result is not
+#' good enough, one can consider increase \code{strNum} and/or \code{diaNum}
+#' to integrate more neighboring information to increase the quality of
+#' alignment, but the speed may drop.
+#' @return A list contains the same elements as in the input arguments.
+#' @examples
+#' # obtain data
+#' ncGTWparam <- initncGTWparam(downSample=1, stpRat=0.5, strNum=2, diaNum=2)
+#' ncGTWparam
+#' @export
+
+initncGTWparam <- function(downSample=2, stpRat=0.6, maxStp=NULL, strNum=1,
+    diaNum=1, nor=1){
+
+    return(list(downSample=downSample, stpRat=stpRat, maxStp=maxStp,
+        strNum=strNum, diaNum=diaNum, nor=nor))
+}
+
 #' Compute average pairwise correlation and overlapping area
 #'
 #' This function computes average pairwise correlation and overlapping area of
 #' each sample pair.
-#' @param ncGTWinput A list return by \code{\link{loadProfile}}, which contains
-#'   the needed information for realignment.
+#' @param ncGTWinput A list in which each element is a \code{\link{ncGTWinput}}
+#'   object.
 #' @param sampleRt A list of the same length as the sample number in which each
 #'   element is a vector corresponding to the sample raw/adjusted RT.
 #' @details This function computes the pairwise correlation and overlapping area
@@ -48,13 +95,13 @@
 #' @export
 
 meanCorOl <- function(ncGTWinput, sampleRt){
-    samNum <- dim(ncGTWinput$rtRaw)[1]
-    pointNum <- dim(ncGTWinput$rtRaw)[2]
-    profiles <- ncGTWinput$profiles
+    samNum <- dim(ncGTWinput@rtRaw)[1]
+    pointNum <- dim(ncGTWinput@rtRaw)[2]
+    profiles <- ncGTWinput@profiles
     rtRange <- matrix(0, samNum, pointNum)
     for (n in seq_len(samNum)){
         profiles[n, ] <- gaussFilter(profiles[n, ])
-        rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
+        rtRange[n, ] <- sampleRt[[n]][ncGTWinput@rtRaw[n, ]]
     }
     proInter <- matrix(0, samNum, pointNum * 10)
     interX <- seq(max(rtRange[ , 1]), min(rtRange[ , pointNum]),

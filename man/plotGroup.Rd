@@ -5,8 +5,8 @@
 \title{Plot profiles for each peak group}
 \usage{
 plotGroup(ncGTWinput, sampleRt,
-    sampleInd = seq_len(dim(ncGTWinput$rtRaw)[1]), ind = NULL,
-    savePath = NULL, show = TRUE, sub = TRUE, filter = FALSE)
+  sampleInd = seq_len(dim(ncGTWinput@rtRaw)[1]), ind = NULL,
+  savePath = NULL, show = TRUE, sub = TRUE, filter = FALSE)
 }
 \arguments{
 \item{ncGTWinput}{An object return by \code{\link{loadProfile}} of sample

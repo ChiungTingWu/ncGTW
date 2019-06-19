@@ -3,17 +3,13 @@
 #' This function produces the new warping functions (RT lists) with the
 #' realignment result.
 #' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object.
-#' @param ncGTWinput A list return by \code{\link{loadProfile}}, which contains
-#'   the needed information for realignment.
-#' @param ncGTWoutput A list return by \code{\link{ncGTWalign}}, which contains
-#'   the realignment result.
+#' @param ncGTWinput A \code{\link{ncGTWinput}} object.
+#' @param ncGTWoutput A \code{\link{ncGTWoutput}} object.
 #' @param ppm Should be set as same as the one when performing the peak
 #'   detection function in \code{xcms}.
 #' @details This function produces the new warping functions (RT lists) with the
 #' realignment result.
-#' @return A list with two elements. The first element is the new warping
-#' functions of all samples, and the second one is a matrix of peak
-#' information with new RT positions.
+#' @return A \code{\link{ncGTWwarp}} object.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -41,18 +37,22 @@
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
+#' # initialize the parameters of ncGTW alignment with default
+#' ncGTWparam <- initncGTWparam()
+#'
 #' # run ncGTW alignment
 #' ncGTWoutputs <- vector('list', length(ncGTWinputs))
 #' for (n in seq_along(ncGTWinputs))
-#'     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+#'     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5,
+#'         ncGTWparam = ncGTWparam)
 #'
 #' # adjust RT with the realignment results from ncGTW
 #' ncGTWres <- xcmsLargeWin
 #' ncGTWRt <- vector('list', length(ncGTWinputs))
 #' for (n in seq_along(ncGTWinputs)){
 #'     adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[n]], ncGTWoutputs[[n]], ppm)
-#'     xcms::peaks(ncGTWres) <- adjustRes$peaks
-#'     ncGTWRt[[n]] <- adjustRes$rtncGTW
+#'     xcms::peaks(ncGTWres) <- ncGTWpeaks(adjustRes)
+#'     ncGTWRt[[n]] <- rtncGTW(adjustRes)
 #' }
 #'
 #' # apply the adjusted RT to a xcmsSet object
@@ -71,16 +71,20 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     peaks <- xcmsLargeWin@peaks
     groups <- xcmsLargeWin@groups
     groupidx <- xcmsLargeWin@groupidx
-    groupInd <- ncGTWinput$groupInfo['index']
+    groupInd <- ncGTWinput@groupInfo['index']
     rtXCMS <- xcmsLargeWin@rt$corrected
     rtRaw <- xcmsLargeWin@rt$raw
-    scanRangeOld <- ncGTWinput$rtRaw
-    data <- ncGTWoutput$data
-    parPath <- ncGTWoutput$parPath
-    path2 <- ncGTWoutput$path2
-    parInd <- ncGTWoutput$parInd
-    scanRange <- ncGTWoutput$scanRange
-    downSample <- ncGTWoutput$downSample
+    scanRangeOld <- ncGTWinput@rtRaw
+    # data <- ncGTWoutput$data
+    # parPath <- ncGTWoutput$parPath
+    # path2 <- ncGTWoutput$path2
+    # parInd <- ncGTWoutput$parInd
+    # scanRange <- ncGTWoutput$scanRange
+    # downSample <- ncGTWoutput$downSample
+    data <- ncGTWoutput@alignData
+    path <- ncGTWoutput@ncGTWpath
+    scanRange <- ncGTWoutput@scanRange
+    downSample <- ncGTWoutput@downSample
 
     XCMSPeaks <- cbind(peaks[groupidx[[groupInd]], ],
         peakInd = groupidx[[groupInd]])
@@ -121,7 +125,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
         c('scan_XCMS', 'scan_ncGTW', 'rt_ncGTW', 'scanmin_XCMS',
         'scanmin_ncGTW', 'rtmin_ncGTW', 'scanmax_XCMS', 'scanmax_ncGTW',
         'rtmax_ncGTW', 'sample')
-    path <- pathCombine(parPath, path2, parInd)
+    # path <- pathCombine(parPath, path2, parInd)
 
     warpOrder <- sort(XCMSPeaks[ , 'maxo'], index.return = TRUE,
         decreasing = TRUE)$ix
@@ -433,7 +437,7 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     for (n in seq_len(dim(rtncGTWsub)[1]))
         rtncGTW[[n]][scanRangeOld[n,]] <- rtncGTWsub[n, ]
 
-    return(list(rtncGTW = rtncGTW, peaks = peaks))
+    return(new("ncGTWwarp", rtncGTW=rtncGTW, ncGTWpeaks=peaks))
 }
 
 label2path <- function(cut, gtwInfo){

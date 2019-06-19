@@ -38,8 +38,8 @@ test_that("loadProfile loads all sample profiles", {
     ncGTWinputs <- loadProfile(file, excluGroups)
 
     expect_equal(length(ncGTWinputs), 2)
-    expect_equal(nrow(ncGTWinputs[[1]][[2]]), length(file))
-    expect_equal(nrow(ncGTWinputs[[2]][[2]]), length(file))
+    expect_equal(nrow(ncGTWinputs[[1]]@profiles), length(file))
+    expect_equal(nrow(ncGTWinputs[[2]]@profiles), length(file))
 })
 
 test_that("ncGTWalign realign the misaligned feature, and adjustRT produces the
@@ -69,17 +69,21 @@ test_that("ncGTWalign realign the misaligned feature, and adjustRT produces the
     # load the sample profiles
     ncGTWinputs <- loadProfile(file, excluGroups)
 
+    # initialize the parameters of ncGTW alignment with default
+    ncGTWparam <- initncGTWparam()
+
     # run ncGTW alignment
-    ncGTWoutputs <- ncGTWalign(ncGTWinputs[[1]], xcmsLargeWin, 5)
-    expect_equal(nrow(ncGTWoutputs$warpedAll), length(file))
+    ncGTWoutputs <- ncGTWalign(ncGTWinputs[[1]], xcmsLargeWin, 5,
+                               ncGTWparam = ncGTWparam)
+    expect_equal(length(ncGTWoutputs@ncGTWpath), length(file))
 
     # adjust RT with the realignment results from ncGTW
     ncGTWres <- xcmsLargeWin
 
     adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[1]], ncGTWoutputs, ppm)
 
-    expect_equal(nrow(peaks(xcmsLargeWin)), nrow(adjustRes$peaks))
-    expect_equal(length(adjustRes$rtncGTW), length(file))
+    expect_equal(nrow(adjustRes@ncGTWpeaks), nrow(peaks(xcmsLargeWin)))
+    expect_equal(length(adjustRes@rtncGTW), length(file))
 })
 
 

@@ -1,8 +1,7 @@
 #' Run ncGTW alignment
 #'
 #' This function applies ncGTW alignment to the input feature.
-#' @param ncGTWinput A list return by \code{\link{loadProfile}}, which contains
-#'   the needed information for realignment.
+#' @param ncGTWinput A \code{\link{ncGTWinput}} object.
 #' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object.
 #' @param parSamp Decide how many samples are in each group when considering
 #'   parallel computing, and the default is 10.
@@ -10,10 +9,10 @@
 #'   and can be created by \code{\link[BiocParallel]{SerialParam}},
 #'   \code{\link[BiocParallel]{MulticoreParam}}, or
 #'   \code{\link[BiocParallel]{SnowParam}}.
-#' @param ncGTWparam A list contains more parameters of ncGTW alignment.
+#' @param ncGTWparam A list object returned by \code{\link{initncGTWparam}}.
 #' @details This function realign the input feature with ncGTW alignment
 #' function with given m/z and RT range.
-#' @return A list contains the realignment result of the input feature.
+#' @return A \code{\link{ncGTWoutput}} object.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -41,10 +40,14 @@
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
+#' # initialize the parameters of ncGTW alignment with default
+#' ncGTWparam <- initncGTWparam()
+#'
 #' # run ncGTW alignment
 #' ncGTWoutputs <- vector('list', length(ncGTWinputs))
 #' for (n in seq_along(ncGTWinputs))
-#'     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5)
+#'     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5,
+#'         ncGTWparam = ncGTWparam)
 #' @export
 
 ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
@@ -66,7 +69,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 
     stpRat <- if (is.null(ncGTWparam$stpRat)) 0.6 else ncGTWparam$stpRat
     ncGTWparam$stpRat <- stpRat
-    maxStp <- if (is.null(ncGTWparam$maxStp)) round(dim(ncGTWinput$rtRaw)[2] %/%
+    maxStp <- if (is.null(ncGTWparam$maxStp)) round(dim(ncGTWinput@rtRaw)[2] %/%
                                     downSample * stpRat) else ncGTWparam$maxStp
     ncGTWparam$maxStp <- maxStp
     rangeThre <- if (is.null(ncGTWparam$rangeThre)) 1 else ncGTWparam$rangeThre
@@ -89,13 +92,13 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
     ncGTWparam$noiseVar <- noiseVar
 
 
-    groupInd <- ncGTWinput$groupInfo[1]
+    groupInd <- ncGTWinput@groupInfo[1]
     cat("ncGTW is realigning group", groupInd, "...\n")
 
-    dataOri <- ncGTWinput$profiles
+    dataOri <- ncGTWinput@profiles
     dataFil <- t(apply(dataOri, 1, gaussFilter))
     data <- dataFil[ , seq(1, dim(dataFil)[2], downSample)]
-    scanRange <- ncGTWinput$rtRaw[ , seq(1, dim(dataFil)[2], downSample)]
+    scanRange <- ncGTWinput@rtRaw[ , seq(1, dim(dataFil)[2], downSample)]
 
     dataNum <- dim(data)[1]
     specLen <- dim(data)[2]
@@ -330,11 +333,15 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
             tempCount <- tempCount + parNum[n]
         }
     }
-    return(
-        list(parPath = parPath, path2 = path2, parStat = parStat,
-            parInd = parInd, smoM2 = smoM2, data = data,
-            scanRange= scanRange, warpedAll = warpedAll,
-            downSample = downSample))
+    path <- pathCombine(parPath, path2, parInd)
+
+#   return(
+#       list(parPath = parPath, path2 = path2, parStat = parStat,
+#           parInd = parInd, smoM2 = smoM2, data = data,
+#           scanRange= scanRange, warpedAll = warpedAll,
+#           downSample = downSample))
+    return(new("ncGTWoutput", alignData=data, scanRange=scanRange,
+        ncGTWpath=path, downSample=downSample))
 }
 
 

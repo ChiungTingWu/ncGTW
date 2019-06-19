@@ -22,14 +22,7 @@
 #' Considering there may be missing peak by peak detection, \code{mzAdd} and
 #' \code{rtAdd} are to increase the integration range.
 #' @return A list of the same length as the row number of \code{excluGroups},
-#' the components of each element is as following:
-#'
-#'     \item{groupInfo}{The peak group information from \code{excluGroups}.}
-#'
-#'     \item{profiles}{The loaded intensity matrix with row as sample, column as
-#'     RT.}
-#'
-#'     \item{rtRaw}{The loaded raw RT matrix with row as sample, column as RT.}
+#' in which each element is a \code{\link{ncGTWinput}} object.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -140,11 +133,9 @@ loadProfile <- function(filePaths, excluGroups, mzAdd=0.005, rtAdd=10,
         groupInfo <- excluGroups[n, ]
         if (!'index' %in% names(groupInfo))
             groupInfo <- c(index=n, groupInfo)
-        ncGTWinputs[[n]] <- list(groupInfo=groupInfo,
-                                profiles=groupProf[[n]],
-                                rtRaw=groupRt[[n]])
+        ncGTWinputs[[n]] <- new("ncGTWinput", groupInfo=groupInfo,
+            profiles=groupProf[[n]], rtRaw=groupRt[[n]])
     }
-
     return(ncGTWinputs)
 }
 

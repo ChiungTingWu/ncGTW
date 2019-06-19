@@ -10,6 +10,4 @@ extra
 tempCode
 *.Rproj
 *.Rold
-*.Rmd
-*.bib
-*.csl
+README.Rmd

@@ -7,8 +7,8 @@
 meanCorOl(ncGTWinput, sampleRt)
 }
 \arguments{
-\item{ncGTWinput}{A list return by \code{\link{loadProfile}}, which contains
-the needed information for realignment.}
+\item{ncGTWinput}{A list in which each element is a \code{\link{ncGTWinput}}
+object.}
 
 \item{sampleRt}{A list of the same length as the sample number in which each
 element is a vector corresponding to the sample raw/adjusted RT.}

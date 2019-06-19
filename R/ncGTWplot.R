@@ -54,25 +54,25 @@
 #' @export
 
 plotGroup <-
-    function(ncGTWinput, sampleRt,sampleInd=seq_len(dim(ncGTWinput$rtRaw)[1]),
+    function(ncGTWinput, sampleRt,sampleInd=seq_len(dim(ncGTWinput@rtRaw)[1]),
         ind=NULL, savePath=NULL, show=TRUE, sub=TRUE, filter=FALSE){
-    samNum <- dim(ncGTWinput$rtRaw)[1]
-    profiles <- ncGTWinput$profiles
+    samNum <- dim(ncGTWinput@rtRaw)[1]
+    profiles <- ncGTWinput@profiles
     if (filter)
         for (n in seq_len(samNum))
             profiles[n, ] <- gaussFilter(profiles[n, ])
 
-    rtRange <- matrix(0, samNum, dim(ncGTWinput$rtRaw)[2])
+    rtRange <- matrix(0, samNum, dim(ncGTWinput@rtRaw)[2])
     for (n in seq_len(samNum))
-        rtRange[n, ] <- sampleRt[[n]][ncGTWinput$rtRaw[n, ]]
+        rtRange[n, ] <- sampleRt[[n]][ncGTWinput@rtRaw[n, ]]
 
     colVec <- matrix(0, samNum, 1)
     for (n in seq_len(dim(colVec)[1]))
         colVec[n] <- rgb(n / samNum, 1 - n / samNum,
             abs(samNum / 2 - abs(n - samNum / 2)) / (samNum / 2))
 
-    mzmed <- round(ncGTWinput$groupInfo['mzmed'], 2)
-    groupInd <- ncGTWinput$groupInfo['index']
+    mzmed <- round(ncGTWinput@groupInfo['mzmed'], 2)
+    groupInd <- ncGTWinput@groupInfo['index']
     tit <- paste("Extracted Ion Chromatogram:", mzmed, "m/z")
     if (!is.null(ind)){
         subt <- paste0("Group ", groupInd, " (", ind, ")",
