@@ -56,7 +56,7 @@ for (n in seq_along(file)){
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-
+\dontrun{
 # load the sample profiles
 ncGTWinputs <- loadProfile(file, excluGroups)
 
@@ -68,4 +68,5 @@ ncGTWoutputs <- vector('list', length(ncGTWinputs))
 for (n in seq_along(ncGTWinputs))
     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, 5,
         ncGTWparam = ncGTWparam)
+}
 }

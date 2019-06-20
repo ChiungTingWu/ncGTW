@@ -50,7 +50,7 @@ for (n in seq_along(file)){
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-
+\dontrun{
 # load the sample profiles
 ncGTWinputs <- loadProfile(file, excluGroups)
 
@@ -67,4 +67,5 @@ ncGTWres <- xcmsLargeWin
 adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[1]], ncGTWoutputs[[1]], ppm)
 rt <- rtncGTW(adjustRes)
 peaks <- ncGTWpeaks(adjustRes)
+}
 }

@@ -77,11 +77,12 @@ for (n in seq_along(file)){
 }
 # sort the paths by data acquisition order
 file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-
+\dontrun{
 # load the sample profiles
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 gInfo <- groupInfo(ncGTWinputs[[1]])
 prof <- profiles(ncGTWinputs[[1]])
 rtR <- rtRaw(ncGTWinputs[[1]])
+}
 }

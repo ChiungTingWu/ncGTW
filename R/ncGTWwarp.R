@@ -33,7 +33,7 @@
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-#'
+#' \dontrun{
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
@@ -65,6 +65,7 @@
 #'         rtCor[[n]][[m]] <- ncGTWRt[[m]][[n]]
 #' }
 #' slot(ncGTWres, 'rt')$corrected <- rtCor
+#' }
 #' @export
 
 adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){

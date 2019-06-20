@@ -30,13 +30,14 @@
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-#'
+#' \dontrun{
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
 #' gInfo <- groupInfo(ncGTWinputs[[1]])
 #' prof <- profiles(ncGTWinputs[[1]])
 #' rtR <- rtRaw(ncGTWinputs[[1]])
+#' }
 
 setMethod("groupInfo", "ncGTWinput", function(object) object@groupInfo)
 
@@ -92,7 +93,7 @@ setMethod("rtRaw", "ncGTWinput", function(object) object@rtRaw)
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-#'
+#' \dontrun{
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
@@ -109,6 +110,7 @@ setMethod("rtRaw", "ncGTWinput", function(object) object@rtRaw)
 #' rt <- scanRange(ncGTWoutputs[[1]])
 #' paths <- ncGTWpath(ncGTWoutputs[[1]])
 #' downSam <- downSample(ncGTWoutputs[[1]])
+#' }
 
 setMethod("alignData", "ncGTWoutput", function(object) object@alignData)
 
@@ -176,7 +178,7 @@ setMethod("downSample", "ncGTWoutput", function(object) object@downSample)
 #' }
 #' # sort the paths by data acquisition order
 #' file <- file[sort.int(tempInd, index.return = TRUE)$ix]
-#'
+#' \dontrun{
 #' # load the sample profiles
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
@@ -193,6 +195,7 @@ setMethod("downSample", "ncGTWoutput", function(object) object@downSample)
 #' adjustRes <- adjustRT(ncGTWres, ncGTWinputs[[1]], ncGTWoutputs[[1]], ppm)
 #' rt <- rtncGTW(adjustRes)
 #' peaks <- ncGTWpeaks(adjustRes)
+#' }
 
 setMethod("rtncGTW", "ncGTWwarp", function(object) object@rtncGTW)
 
