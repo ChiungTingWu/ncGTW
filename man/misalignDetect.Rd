@@ -30,7 +30,7 @@ with all detected misaligned peak groups.
 \description{
 This function detects the misaligned peak groups with two
 \code{\link[xcms]{xcmsSet-class}} object with two different values of
-\code{bw} parameter in \code{\link[xcms]{group}}.
+\code{bw} parameter in \code{\link[xcms:group.density]{group}}.
 }
 \details{
 This function includes two major steps to determine a peak group is

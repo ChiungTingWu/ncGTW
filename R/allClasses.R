@@ -5,7 +5,7 @@
 #' @slot groupInfo  A vector of the information of the feature.
 #' @slot profiles   A raw data matrix in which each row is a sample profile.
 #' @slot rtRaw      A raw RT matrix in which each row is the corresponding
-#'   sample RT. in \code{profiles}.
+#'   sample RT in \code{profiles}.
 
 ncGTWinput <- setClass("ncGTWinput", slots=c(groupInfo="vector",
     profiles="matrix", rtRaw="matrix")
@@ -19,7 +19,7 @@ ncGTWinput <- setClass("ncGTWinput", slots=c(groupInfo="vector",
 #' @slot alignData  A matrix in which each row is a sample profile after
 #'   downsampling.
 #' @slot scanRange  A downsampled RT matrix in which each row is the
-#'   corresponding sample RT in \code{data}.
+#'   corresponding sample RT in \code{alignData}.
 #' @slot path       A list of the same length as the sample number, in which
 #'   each element is a matrix of the alignment result of the corresponding
 #'   sample.

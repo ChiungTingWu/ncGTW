@@ -13,16 +13,17 @@
 #'   10 (seconds).
 #' @param profstep The size of each m/z bin for peak integration.
 #' @param BPPARAM A object of \pkg{BiocParallel} to control parallel processing,
-#'   and can be created by \code{\link[BiocParallel]{SerialParam}},
-#'   \code{\link[BiocParallel]{MulticoreParam}}, or
-#'   \code{\link[BiocParallel]{SnowParam}}.
+#'   and can be created by
+#'   \code{\link[BiocParallel:SerialParam-class]{SerialParam}},
+#'   \code{\link[BiocParallel:MulticoreParam-class]{MulticoreParam}}, or
+#'   \code{\link[BiocParallel:SnowParam-class]{SnowParam}}.
 #'
 #' @details This function obtains the extracted ion chromatogram for each sample
 #' at the givin m/z and RT range with a certain m/z bin size for integration.
 #' Considering there may be missing peak by peak detection, \code{mzAdd} and
 #' \code{rtAdd} are to increase the integration range.
-#' @return A list of the same length as the row number of \code{excluGroups},
-#' in which each element is a \code{\link{ncGTWinput}} object.
+#' @return A list of the same length as the row number of \code{excluGroups}, in
+#' which each element is a \code{\link{ncGTWinput}} object.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')

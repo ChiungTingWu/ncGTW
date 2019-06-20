@@ -24,13 +24,14 @@ range for loading.}
 \item{profstep}{The size of each m/z bin for peak integration.}
 
 \item{BPPARAM}{A object of \pkg{BiocParallel} to control parallel processing,
-and can be created by \code{\link[BiocParallel]{SerialParam}},
-\code{\link[BiocParallel]{MulticoreParam}}, or
-\code{\link[BiocParallel]{SnowParam}}.}
+and can be created by
+\code{\link[BiocParallel:SerialParam-class]{SerialParam}},
+\code{\link[BiocParallel:MulticoreParam-class]{MulticoreParam}}, or
+\code{\link[BiocParallel:SnowParam-class]{SnowParam}}.}
 }
 \value{
-A list of the same length as the row number of \code{excluGroups},
-in which each element is a \code{\link{ncGTWinput}} object.
+A list of the same length as the row number of \code{excluGroups}, in
+which each element is a \code{\link{ncGTWinput}} object.
 }
 \description{
 This function loads each raw sample profiles from the file with certain m/z

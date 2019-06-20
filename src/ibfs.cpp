@@ -104,7 +104,7 @@ template <typename captype, typename tcaptype, typename flowtype> IBFSGraph<capt
 		{
 			(*errorFunction)("Cannot Allocate Memory!\n");
 		}
-		exit(1);
+		// exit(1);
 	}
 
 	node *maxNode = nodes + numNodes - 1;

@@ -15,7 +15,7 @@ An S4 class for storing the outputs of ncGTW alignment.
 downsampling.}
 
 \item{\code{scanRange}}{A downsampled RT matrix in which each row is the
-corresponding sample RT in \code{data}.}
+corresponding sample RT in \code{alignData}.}
 
 \item{\code{path}}{A list of the same length as the sample number, in which
 each element is a matrix of the alignment result of the corresponding

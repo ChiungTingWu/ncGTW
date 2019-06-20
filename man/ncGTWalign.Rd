@@ -16,9 +16,10 @@ ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
 parallel computing, and the default is 10.}
 
 \item{bpParam}{A object of \pkg{BiocParallel} to control parallel processing,
-and can be created by \code{\link[BiocParallel]{SerialParam}},
-\code{\link[BiocParallel]{MulticoreParam}}, or
-\code{\link[BiocParallel]{SnowParam}}.}
+and can be created by
+\code{\link[BiocParallel:SerialParam-class]{SerialParam}},
+\code{\link[BiocParallel:MulticoreParam-class]{MulticoreParam}}, or
+\code{\link[BiocParallel:SnowParam-class]{SnowParam}}.}
 
 \item{ncGTWparam}{A list object returned by \code{\link{initncGTWparam}}.}
 }

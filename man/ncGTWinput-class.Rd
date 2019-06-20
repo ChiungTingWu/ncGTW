@@ -16,6 +16,6 @@ An S4 class for storing the inputs of ncGTW alignment.
 \item{\code{profiles}}{A raw data matrix in which each row is a sample profile.}
 
 \item{\code{rtRaw}}{A raw RT matrix in which each row is the corresponding
-sample RT. in \code{profiles}.}
+sample RT in \code{profiles}.}
 }}
 

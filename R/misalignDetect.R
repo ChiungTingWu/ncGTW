@@ -2,7 +2,7 @@
 #'
 #' This function detects the misaligned peak groups with two
 #' \code{\link[xcms]{xcmsSet-class}} object with two different values of
-#' \code{bw} parameter in \code{\link[xcms]{group}}.
+#' \code{bw} parameter in \code{\link[xcms:group.density]{group}}.
 #' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object with a larger
 #'   \code{bw}, usually the maximum expected retension time drift.
 #' @param xcmsSmallWin A \code{\link[xcms]{xcmsSet-class}} object with a smaller
