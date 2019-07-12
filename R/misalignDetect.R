@@ -33,6 +33,18 @@
 
 misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre=0.05,
     maxRtWin=50){
+    if (!is(xcmsLargeWin, 'xcmsSet'))
+        stop('xcmsLargeWin should be a "xcmsSet" object.')
+    if (!is(xcmsSmallWin, 'xcmsSet'))
+        stop('xcmsSmallWin should be a "xcmsSet" object.')
+    if (ppm <= 0)
+        stop('ppm should be larger than 0.')
+    if (maxRtWin <= 0)
+        stop('maxRtWin should be larger than 0.')
+    if (qThre < 0 || qThre > 1)
+        stop('qThre should be between 0 and 1.')
+
+
     groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
     excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
     excluGroups <- excluInfo$excluGroups

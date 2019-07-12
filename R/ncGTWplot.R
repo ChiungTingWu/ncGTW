@@ -54,9 +54,17 @@
 #' @export
 
 plotGroup <-
-    function(ncGTWinput, sampleRt,sampleInd=seq_len(dim(ncGTWinput@rtRaw)[1]),
+    function(ncGTWinput, sampleRt, sampleInd=seq_len(dim(ncGTWinput@rtRaw)[1]),
         ind=NULL, savePath=NULL, show=TRUE, sub=TRUE, filter=FALSE){
+
+    if (!is(ncGTWinput, 'ncGTWinput'))
+        stop('ncGTWoutput should be a "ncGTWoutput" object.')
     samNum <- dim(ncGTWinput@rtRaw)[1]
+    if (length(sampleRt) != samNum)
+        stop('sampleRt should be a list with length as same as sample number.')
+    if (!is.character(savePath))
+        stop('savePath should be a character vector')
+
     profiles <- ncGTWinput@profiles
     if (filter)
         for (n in seq_len(samNum))
@@ -96,7 +104,7 @@ plotGroup <-
     if (length(savePath) != 0){
         if (substr(savePath, nchar(savePath), nchar(savePath)) != '/')
             savePath <- paste0(savePath, '/')
-        if (ind){
+        if (!is.null(ind)){
             filePath <- paste0(savePath, "group", groupInd, "_", ind, ".png")
         } else{
             filePath <- paste0(savePath, "group", groupInd, ".png")

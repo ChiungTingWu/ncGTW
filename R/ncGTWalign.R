@@ -99,10 +99,31 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 
     dataOri <- ncGTWinput@profiles
     dataFil <- t(apply(dataOri, 1, gaussFilter))
-    data <- dataFil[ , seq(1, dim(dataFil)[2], downSample)]
-    scanRange <- ncGTWinput@rtRaw[ , seq(1, dim(dataFil)[2], downSample)]
+    scanRangeOld <- ncGTWinput@rtRaw
 
-    dataNum <- dim(data)[1]
+    dataNum <- dim(dataFil)[1]
+    specLen <- dim(dataFil)[2]
+#    data <- dataFil[ , seq(downSample, dim(dataFil)[2], downSample)]
+#    scanRange <-
+#        ncGTWinput@rtRaw[ , seq(downSample, dim(dataFil)[2], downSample)]
+    data <- matrix(0, dataNum, specLen %/% downSample)
+    scanRange <- matrix(0, dataNum, specLen %/% downSample)
+    for (i in seq_len(dataNum)){
+        for (j in seq_len(specLen %/% downSample)){
+            subInd <- ((j - 1) * downSample + 1):(j * downSample)
+            maxInd <- which.max(dataFil[i, subInd])
+            data[i, j] <- dataFil[i, subInd[maxInd]]
+            scanRange[i, j] <- ncGTWinput@rtRaw[i, subInd[maxInd]]
+        }
+    }
+    data <- cbind(dataFil[ , 1], data)
+    scanRange <- cbind(ncGTWinput@rtRaw[ , 1], scanRange)
+    if (any(data[ , dim(data)[2]] != dataFil[ , specLen])){
+        data <- cbind(data, dataFil[ , specLen])
+        scanRange <- cbind(scanRange, ncGTWinput@rtRaw[ , specLen])
+    }
+
+
     specLen <- dim(data)[2]
 
     parSect <- dataNum / parSamp
@@ -140,8 +161,8 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
     ncGTW1stOutput <-
         BiocParallel::bplapply(parInfos, ncGTW1stLayer, parSect,
             xcmsLargeWin, groupInd, scanRange, mir, strNum, diaNum, noiseVar,
-            maxStp, dia, logt, nor, mu, sigma, biP, weiP, rangeThre,
-            BPPARAM=bpParam)
+            maxStp, dia, logt, nor, mu, sigma, biP, weiP, rangeThre, downSample,
+            scanRangeOld, BPPARAM=bpParam)
 
     parPath <- replicate(parSect, list(vector('list', parSamp)))
     parWarped <- array(0, c(parSamp, specLen, parSect))
@@ -294,7 +315,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 
             statResult <-
                 smoTest(xcmsLargeWin, groupInd, data, scanRange,
-                    seq_len(dataNum), temp2path)
+                    seq_len(dataNum), temp2path, downSample, scanRangeOld)
             tempRange <- statResult[3, 2]
             # tempVar = statResult[3, 3]
             # tempRange = 999
@@ -318,8 +339,10 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
             # mpfv_v(smo2, 1) = mpfv(par_super_warped, super_sample);
             #  end
         }
-
-        bestSmo <- which.min(smoM2[ , 3])  #+ smoM2[ , 4])
+        minRange <- min(smoM2[ , 3])
+        bestSmo <- which(smoM2[ , 3] == minRange)
+        bestSmo <- bestSmo[which.min(smoM2[bestSmo, 1])]
+        # bestSmo <- which.min(smoM2[ , 3])  #+ smoM2[ , 4])
         path2 <- tempPath[[bestSmo]]
 
         for (m in seq_len(parSect))
@@ -351,7 +374,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 ncGTW1stLayer <-
     function(parInfo, parSect, xcmsLargeWin, groupInd, scanRange,
         mir, strNum, diaNum, noiseVar, maxStp, dia, logt, nor,
-        mu, sigma, biP, weiP, rangeThre){
+        mu, sigma, biP, weiP, rangeThre, downSample, scanRangeOld){
     # suppressPackageStartupMessages({require(ncGTW)})
     n <- parInfo$num
     # cat(format(Sys.time()), 'Zero', n, 'of', parSect, '\n')
@@ -472,7 +495,8 @@ ncGTW1stLayer <-
 
         statResult <-
             smoTest(xcmsLargeWin, groupInd, parspec[seq_len(parnum),],
-                scanRange, parind[seq_len(parnum)], path2)
+                scanRange, parind[seq_len(parnum)], path2, downSample,
+                scanRangeOld)
         tempRange <- statResult[3, 2]
 
         brokenNum1 <- sum((cut[eeBet[ ,1]] + cut[eeBet[ ,2]]) == 1)

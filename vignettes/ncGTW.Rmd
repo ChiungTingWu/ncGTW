@@ -46,6 +46,11 @@ identifying the misaligned features, the user can realign these features with
 the alignment function in `ncGTW` to obtain a better alignment result for more
 accurate analysis, such as peak-regrouping or peak-filling with `xcms`.
 
+You can install the latest version of ncGTW from GitHub by
+```{r, eval = FALSE}
+devtools::install_github("ChiungTingWu/ncGTW")
+```
+
 # Quick Start
 
 To check there are misaligned features from `xcms` or not, one can input two
@@ -146,7 +151,7 @@ realignment.
 
 ### Misaligned Feature Detection
 
-To detect misaligned features, `misalignDetect()` needs two different XCMS
+To detect the misaligned features, `misalignDetect()` needs two different XCMS
 grouping results as inputs. This function tells which features in `xcmsLargeWin`
 could be broken into several small features in `xcmsSmallWin`, and the detected
 features should be misaligned features. `ppm` is one criteria to decide the
@@ -159,10 +164,10 @@ excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
 show(excluGroups)
 ```
 
-There are two features are detected as shown in `excluGroups`. Before realigning
-them, the raw profile of each detected feature of each sample needs to load from
-the files. `loadProfile()` loads the needed information with file paths (`file`)
-and the detected features (`excluGroups`) as inputs.
+There are two peak groups (features) are detected as shown in `excluGroups`. 
+Before realigning them, the raw profile of each detected feature of each sample 
+needs to load from the files. `loadProfile()` loads the needed information with 
+file paths (`file`) and the detected features (`excluGroups`) as inputs.
 
 ```{r, message = FALSE}
 ncGTWinputs <- loadProfile(file, excluGroups)
@@ -290,8 +295,8 @@ compCV(ncGTWresFilled)
 ```
 
 For the first misaligned feature, the coefficient of variation (CV) decreases
-from 0.369 to 0.238, and for the second one, the CV decreases from 0.351 to
-0.128. Thus, it is very clear that new warping functions improve the quality of
+from 0.369 to 0.229, and for the second one, the CV decreases from 0.351 to
+0.123. Thus, it is very clear that new warping functions improve the quality of
 peak-filling significantly.
 
 # References

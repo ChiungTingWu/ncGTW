@@ -193,7 +193,7 @@ rt2scan <- function(rt, rtAll)
     return(which.min(abs(rtAll - rt)))
 
 smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
-                    sampleInd, path2){
+                    sampleInd, path2, downSample, scanRangeOld){
     # groupInd = 176;
     # sampleInd = parInd[1:parNum[n], n]
     peaks <- xcmsLargeWin@peaks
@@ -201,114 +201,133 @@ smoTest <- function(xcmsLargeWin, groupInd, dataSub, scanRange,
     rtXCMS <- xcmsLargeWin@rt$corrected
     rtRaw <- xcmsLargeWin@rt$raw
 
-    prePeaks <- peaks[groupidx[[groupInd]], ]
+    #prePeaks <- peaks[groupidx[[groupInd]], ]
+    prePeaks <- cbind(peaks[groupidx[[groupInd]], ],
+        peakInd = groupidx[[groupInd]])
     prePeaks <- round(prePeaks[is.element(prePeaks[ , 'sample'], sampleInd), ,
         drop=FALSE], digits = 4)
 
-    if (length(prePeaks) == 0){
+    if (length(prePeaks) == 0 || length(unique(prePeaks[ , 'sample'])) == 1)
         return(matrix(-1, 3, 3))
-    } else{
-        if (dim(prePeaks)[1] > 1)
-            prePeaks <-
-                prePeaks[!duplicated(prePeaks[,c('rt', 'rtmax', 'rtmin')]), ,
-                    drop = FALSE]
-        prePeakInd <- prePeaks[ , 'sample']
-        prePeakMed <- prePeaks[, 'rt']
 
-        sampleCount <- table(prePeakInd)
-        groupNum <- max(sampleCount)
-        groupSam <- as.numeric(names(sampleCount)[which.max(sampleCount)])
-        if (groupNum != 1)
-            groupSam <-
-            as.numeric(names(sampleCount)[which(sampleCount == groupNum)])
+    tempInd <- sort(prePeaks[ , 'maxo'], index.return = TRUE,
+        decreasing = TRUE)$ix
+    prePeaks <- prePeaks[tempInd, ]
+    prePeaks <- prePeaks[!duplicated(prePeaks[,c('rt', 'sample')]), ,
+        drop = FALSE]
+    tempInd <- sort(prePeaks[ , 'peakInd'], index.return = TRUE)$ix
+    prePeaks <- prePeaks[tempInd, ]
+    #prePeaks <-
+    #    prePeaks[!duplicated(prePeaks[,c('rt', 'rtmax', 'rtmin')]), ,
+    #             drop = FALSE]
+    prePeakInd <- prePeaks[ , 'sample']
+    prePeakMed <- prePeaks[, 'rt']
 
-        if (length(groupSam)>1){
-            maxRange <- 0
-            maxInd <- 0
-            for (ind in seq_len(length(groupSam))){
-                samPeaks <- prePeaks[prePeakInd ==  groupSam[ind], 'rt']
-                if (max(samPeaks) - min(samPeaks) > maxRange){
-                    maxRange <- max(samPeaks) - min(samPeaks)
-                    maxInd <- groupSam[ind]
-                }
+    sampleCount <- table(prePeakInd)
+    groupNum <- max(sampleCount)
+    groupSam <- as.numeric(names(sampleCount)[which.max(sampleCount)])
+    if (groupNum != 1)
+        groupSam <-
+        as.numeric(names(sampleCount)[which(sampleCount == groupNum)])
+
+    if (length(groupSam)>1){
+        maxRange <- 0
+        maxInd <- 0
+        for (ind in seq_len(length(groupSam))){
+            samPeaks <- prePeaks[prePeakInd ==  groupSam[ind], 'rt']
+            if (max(samPeaks) - min(samPeaks) > maxRange){
+                maxRange <- max(samPeaks) - min(samPeaks)
+                maxInd <- groupSam[ind]
             }
-            groupSam <- if (maxRange == 0) groupSam[1] else maxInd
         }
-
-        kmeansPreInd <-
-            kmeans(prePeaks[, c('rt', 'rtmax', 'rtmin'), drop=FALSE],
-                prePeaks[prePeakInd == groupSam, c('rt', 'rtmax', 'rtmin'),
-                    drop=FALSE])
-
-        oriPeakGroup <- vector('list', groupNum)
-        XCMSPeakGroup <- vector('list', groupNum)
-        ncGTWPeakGroup <- vector('list', groupNum)
-
-        for (n in seq_len(groupNum))
-            XCMSPeakGroup[[n]] <- prePeakMed[kmeansPreInd$cluster == n]
-
-        ncGTWPeakMed <- prePeakMed * 0
-        oriPeakMed <- prePeakMed * 0
-
-        for (n in seq_len(length(ncGTWPeakMed))){
-            samInd <- prePeaks[n, 'sample']
-            samSubInd <- which(sampleInd == prePeaks[n, 'sample'])
-
-            indDif <- abs(scanRange[samInd, ] - rt2scan(prePeakMed[n],
-                rtXCMS[[samInd]]))
-            minIndDif <- min(indDif)
-            medInd <- which(indDif == minIndDif)
-            medInd <- medInd[which.max(dataSub[samSubInd, medInd])]
-
-            if (medInd - 5 < 1){
-                staInd <- 1
-            } else {
-                staInd <- medInd - 5
-            }
-            if (medInd + 5 > dim(dataSub)[2]){
-                endInd <- dim(dataSub)[2]
-            } else{
-                endInd <- medInd + 5
-            }
-            apexRange <- staInd:endInd
-            apexInd <- apexRange[which.max(dataSub[samSubInd, apexRange])]
-            oriPeakMed[n] <- rtRaw[[samInd]][scanRange[samInd, apexInd]]
-
-            samPath <- path2[[samSubInd]]
-            ncGTWPeakMed[n] <- rtRaw[[samInd]][scanRange[samInd, round(mean(
-                samPath[which(samPath[ , 2] == apexInd), 1]))]]
-
-        }
-        oriPeakRt <- cbind(oriPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
-            oriPeakMed, prePeaks[, 'rtmax'] - prePeakMed + oriPeakMed)
-        ncGTWPeakRt <- cbind(ncGTWPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
-            ncGTWPeakMed, prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
-
-        kmeansOriInd <-
-            kmeans(oriPeakRt, oriPeakRt[prePeakInd == groupSam, , drop=FALSE])
-        kmeansncGTWInd <-
-            kmeans(ncGTWPeakRt, ncGTWPeakRt[prePeakInd == groupSam, ,
-                drop=FALSE])
-
-        for (n in seq_len(groupNum)){
-            oriPeakGroup[[n]] <- oriPeakMed[kmeansOriInd$cluster == n]
-            ncGTWPeakGroup[[n]] <- ncGTWPeakMed[kmeansncGTWInd$cluster == n]
-        }
-
-        statResult <- matrix(0, 3, 2)
-        statResult[1, 1] <- sum(vapply(oriPeakGroup, var,
-            vector("double", groupNum)), na.rm=TRUE)
-        statResult[2, 1] <- sum(vapply(XCMSPeakGroup, var,
-            vector("double", groupNum)), na.rm=TRUE)
-        statResult[3, 1] <- sum(vapply(ncGTWPeakGroup, var,
-            vector("double", groupNum)), na.rm=TRUE)
-        statResult[1, 2] <- max(vapply(oriPeakGroup,
-            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
-        statResult[2, 2] <- max(vapply(XCMSPeakGroup,
-            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
-        statResult[3, 2] <- max(vapply(ncGTWPeakGroup,
-            function(x) range(x)[2] - range(x)[1], vector("double", groupNum)))
+        groupSam <- if (maxRange == 0) groupSam[1] else maxInd
     }
+
+    kmeansPreInd <-
+        kmeans(prePeaks[, c('rt', 'rtmax', 'rtmin'), drop=FALSE],
+             prePeaks[prePeakInd == groupSam, c('rt', 'rtmax', 'rtmin'),
+                 drop=FALSE])
+
+    oriPeakGroup <- vector('list', groupNum)
+    XCMSPeakGroup <- vector('list', groupNum)
+    ncGTWPeakGroup <- vector('list', groupNum)
+
+    for (n in seq_len(groupNum))
+        XCMSPeakGroup[[n]] <- prePeakMed[kmeansPreInd$cluster == n]
+
+    ncGTWPeakMed <- prePeakMed * 0
+    oriPeakMed <- prePeakMed * 0
+
+    for (n in seq_len(length(ncGTWPeakMed))){
+        samInd <- prePeaks[n, 'sample']
+        samSubInd <- which(sampleInd == prePeaks[n, 'sample'])
+
+        indDif <- abs(scanRange[samInd, ] - rt2scan(prePeakMed[n],
+                                                    rtXCMS[[samInd]]))
+        minIndDif <- min(indDif)
+        medInd <- which(indDif == minIndDif)
+        medInd <- medInd[which.max(dataSub[samSubInd, medInd])]
+        fRange <- round(3 / mean(diff(rtRaw[[samInd]][scanRange[samInd,]])))
+        if (medInd - fRange < 1){
+            staInd <- 1
+        } else {
+            staInd <- medInd - fRange
+        }
+        if (medInd + fRange > dim(dataSub)[2]){
+            endInd <- dim(dataSub)[2]
+        } else{
+            endInd <- medInd + fRange
+        }
+        apexRange <- staInd:endInd
+        apexInd <- apexRange[which.max(dataSub[samSubInd, apexRange])]
+        oriPeakMed[n] <- rtRaw[[samInd]][scanRange[samInd, apexInd]]
+
+        samPath <- path2[[samSubInd]]
+
+
+        scanSubncGTW <-
+            round(mean(samPath[which(samPath[ , 2] == apexInd), 1]))
+        scanncGTW <- (scanSubncGTW - 1) * downSample
+        if (scanncGTW > dim(scanRangeOld)[2])
+            scanncGTW <- dim(scanRangeOld)[2]
+        #ncGTWPeakMed[n] <- rtRaw[[samInd]][scanRangeOld[samInd, scanncGTW]]
+        ncGTWPeakMed[n] <- scanSubncGTW
+
+        #ncGTWPeakMed[n] <- rtRaw[[samInd]][scanRange[samInd, round(mean(
+        #    samPath[which(samPath[ , 2] == apexInd), 1]))]]
+
+    }
+    oriPeakRt <- cbind(oriPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
+        oriPeakMed, prePeaks[, 'rtmax'] - prePeakMed + oriPeakMed)
+    #ncGTWPeakRt <- cbind(ncGTWPeakMed, prePeaks[, 'rtmin'] - prePeakMed +
+    #    ncGTWPeakMed, prePeaks[, 'rtmax'] - prePeakMed + ncGTWPeakMed)
+    ncGTWPeakRt <- cbind(ncGTWPeakMed, ncGTWPeakMed)
+
+    kmeansOriInd <-
+        kmeans(oriPeakRt, oriPeakRt[prePeakInd == groupSam, , drop=FALSE])
+    kmeansncGTWInd <-
+        kmeans(ncGTWPeakRt, unique(ncGTWPeakRt[prePeakInd == groupSam, ,
+                                               drop=FALSE]))
+
+    for (n in seq_len(groupNum)){
+        oriPeakGroup[[n]] <- oriPeakMed[kmeansOriInd$cluster == n]
+        ncGTWPeakGroup[[n]] <- ncGTWPeakMed[kmeansncGTWInd$cluster == n]
+    }
+
+    statResult <- matrix(0, 3, 2)
+    statResult[1, 1] <- sum(vapply(oriPeakGroup, var,
+        vector("double", 1)), na.rm=TRUE)
+    statResult[2, 1] <- sum(vapply(XCMSPeakGroup, var,
+        vector("double", 1)), na.rm=TRUE)
+    statResult[3, 1] <- sum(vapply(ncGTWPeakGroup, var,
+        vector("double", 1)), na.rm=TRUE)
+    statResult[1, 2] <- max(vapply(oriPeakGroup,
+        function(x) range(x)[2] - range(x)[1], vector("double", 1)))
+    statResult[2, 2] <- max(vapply(XCMSPeakGroup,
+        function(x) range(x)[2] - range(x)[1], vector("double", 1)))
+    statResult[3, 2] <- max(vapply(ncGTWPeakGroup,
+        function(x) range(x)[2] - range(x)[1], vector("double", 1)))
+
     return(statResult)
 
 }
