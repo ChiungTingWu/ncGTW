@@ -543,13 +543,6 @@ template <typename captype, typename tcaptype, typename flowtype> void IBFSGraph
 	node *x, *y;
 	arc *a, aTmp;
 
-	//printf("c sizeof(ptr) = %ld \n", sizeof(node*));
-	//printf("c sizeof(node) = %ld \n", sizeof(node));
-	//printf("c sizeof(arc) = %ld \n", sizeof(arc));
-	//printf("c #nodes = %ld \n", nodeLast-nodes);
-	//printf("c #arcs = %ld \n", (arcLast-arcs) + (nodeLast-nodes));
-	//printf("c #grid_arcs = %ld \n", arcLast-arcs);
-	//printf("c trivial_flow = %ld \n", flow);
 
 	// calculate start arc pointers for every node
 	for (x=nodes; x<nodeLast; x++)

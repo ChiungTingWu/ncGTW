@@ -18,6 +18,15 @@ You can install the latest version of ncGTW from GitHub by
 devtools::install_github("ChiungTingWu/ncGTW")
 ```
 
+or from Bioconductor by
+
+``` r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("ncGTW")
+```
+
 Algorithm overview
 ------------------
 

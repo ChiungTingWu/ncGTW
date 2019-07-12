@@ -326,8 +326,9 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
         gtwInfo1 <- gtwRes1$gtwInfo
         path1 <- label2path(gtwRes1$cut, gtwRes1$gtwInfo)
         if (n != 0){
-            message(format(Sys.time()), ' Solved the 1st maximum flow,
-                section ', n, ' of ', parSect, ', bottom layer.')
+            message(format(Sys.time()),
+                ' Solved the 1st maximum flow, section ', n, ' of ', parSect,
+                ', bottom layer.')
         } else{
             message(format(Sys.time()),
                 ' Solved the 1st maximum flow, top layer.')
@@ -355,8 +356,9 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
         path2 <- label2path(cut2, gtwInfo2)
         tempPath[[smo]] <- path2
         if (n != 0){
-            message(format(Sys.time()), ' Solved the 2nd maximum flow,
-                section ', n, ' of ', parSect, ', bottom layer.')
+            message(format(Sys.time()),
+                ' Solved the 2nd maximum flow, section ', n, ' of ', parSect,
+                ', bottom layer.')
         } else{
             message(format(Sys.time()),
                 ' Solved the 2nd maximum flow, top layer.')
