@@ -5,7 +5,7 @@
 \title{Detect misaligned peak groups in xcmsSet object of XCMS}
 \usage{
 misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
-  maxRtWin = 50)
+    maxRtWin = 50)
 }
 \arguments{
 \item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger

@@ -159,10 +159,10 @@ excluGroups <- misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm)
 show(excluGroups)
 ```
 
-There are two features are detected as shown in `excluGroups`. Before realigning
-them, the raw profile of each detected feature of each sample needs to load from
-the files. `loadProfile()` loads the needed information with file paths (`file`)
-and the detected features (`excluGroups`) as inputs.
+There are two peak groups(features) are detected as shown in `excluGroups`.
+Before realigning them, the raw profile of each detected feature of each sample
+needs to load from the files. `loadProfile()` loads the needed information with
+file paths (`file`) and the detected features (`excluGroups`) as inputs.
 
 ```{r, message = FALSE}
 ncGTWinputs <- loadProfile(file, excluGroups)
@@ -290,8 +290,8 @@ compCV(ncGTWresFilled)
 ```
 
 For the first misaligned feature, the coefficient of variation (CV) decreases
-from 0.369 to 0.238, and for the second one, the CV decreases from 0.351 to
-0.128. Thus, it is very clear that new warping functions improve the quality of
+from 0.369 to 0.229, and for the second one, the CV decreases from 0.351 to
+0.119. Thus, it is very clear that new warping functions improve the quality of
 peak-filling significantly.
 
 # References

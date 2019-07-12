@@ -5,7 +5,7 @@
 \title{Run ncGTW alignment}
 \usage{
 ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
-  bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
+    bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
 }
 \arguments{
 \item{ncGTWinput}{A \code{\link{ncGTWinput}} object.}

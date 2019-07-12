@@ -1,3 +1,5 @@
-There are 20 mzxml files serving as a example dataset in this package.
+There are 20 mzxml files serving as an example dataset in this package.
 
-These 20 example files are selected from a real LC-MS dataset with limited RT and m/z range.
+These 20 example files are selected from an in-house metabolites LC-MS dataset with limited RT and m/z range.
+
+The original dataset contains serum samples from ~2000 randomly selected individuals. The 20 examples are pooled samples and serve as internal quality control samples. Separation of metabolites was carried out using a Waters Acquity Ultra Performance LC system (Waters, Milford, MA, USA). Electrospray Mass Spectrometry was performed using a Xevo G2S Q-TOF (Waters, Milford, MA, USA). Chromatographic methods were based on current NPC methodology.

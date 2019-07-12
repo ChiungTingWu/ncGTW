@@ -5,7 +5,7 @@
 \title{Initialize the parameters of ncGTW alignment}
 \usage{
 initncGTWparam(downSample = 2, stpRat = 0.6, maxStp = NULL,
-  strNum = 1, diaNum = 1, nor = 1)
+    strNum = 1, diaNum = 1, nor = 1)
 }
 \arguments{
 \item{downSample}{A factor of downsampling. The larger, the faster speed of
@@ -53,7 +53,6 @@ to integrate more neighboring information to increase the quality of
 alignment, but the speed may drop.
 }
 \examples{
-# obtain data
 ncGTWparam <- initncGTWparam(downSample=1, stpRat=0.5, strNum=2, diaNum=2)
 ncGTWparam
 }

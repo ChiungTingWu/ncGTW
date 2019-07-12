@@ -5,12 +5,19 @@
 \alias{xcmsExamples}
 \title{Examples of xcmsSet for inputs of ncGTW}
 \format{A list with two \code{\link[xcms]{xcmsSet-class}} objects and one
-\code{ppm} parameter.}
+    \code{ppm} parameter.}
 \usage{
 data(xcmsExamples)
 }
 \description{
 These two \code{\link[xcms]{xcmsSet-class}} objects are created from the
-example dataset. They are examples for inputs of
-\code{\link{misalignDetect}}.
+example dataset attached in this package (in extdata folder) with XCMS
+package. They are examples for inputs of \code{\link{misalignDetect}}.
+}
+\details{
+The example dataset contains 20 samples picked from an in-house LC-MS
+dataset. The user can replicate the two \code{\link[xcms]{xcmsSet-class}}
+objects with \code{\link[xcms]{xcmsSet}}, \code{\link[xcms]{retcor-methods}},
+and \code{\link[xcms]{group-methods}}. For details, please refer to the user
+manual.
 }

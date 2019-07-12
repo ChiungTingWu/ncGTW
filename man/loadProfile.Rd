@@ -5,7 +5,7 @@
 \title{Load sample profiles for each peak group}
 \usage{
 loadProfile(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-  profstep = 0.01, BPPARAM = BiocParallel::SnowParam(workers = 1))
+    profstep = 0, BPPARAM = BiocParallel::SnowParam(workers = 1))
 }
 \arguments{
 \item{filePaths}{The character vector of the loading file paths.}
@@ -21,7 +21,8 @@ range for loading.}
 \item{rtAdd}{The extra RT range for loading (both sides), and the default is
 10 (seconds).}
 
-\item{profstep}{The size of each m/z bin for peak integration.}
+\item{profstep}{The size of each m/z bin for peak integration, and the
+default is 0.}
 
 \item{BPPARAM}{A object of \pkg{BiocParallel} to control parallel processing,
 and can be created by
