@@ -5,7 +5,7 @@
 \title{Load sample profiles for each peak group}
 \usage{
 loadProfile(filePaths, excluGroups, mzAdd = 0.005, rtAdd = 10,
-    profstep = 0, BPPARAM = BiocParallel::SnowParam(workers = 1))
+  profstep = 0, BPPARAM = BiocParallel::SnowParam(workers = 1))
 }
 \arguments{
 \item{filePaths}{The character vector of the loading file paths.}

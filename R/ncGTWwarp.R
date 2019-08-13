@@ -38,7 +38,7 @@
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
 #' # initialize the parameters of ncGTW alignment with default
-#' ncGTWparam <- initncGTWparam()
+#' ncGTWparam <- new("ncGTWparam")
 #'
 #' # run ncGTW alignment
 #' ncGTWoutputs <- vector('list', length(ncGTWinputs))
@@ -72,8 +72,8 @@ adjustRT <- function(xcmsLargeWin, ncGTWinput, ncGTWoutput, ppm){
     if (!is(xcmsLargeWin, 'xcmsSet'))
         stop('xcmsLargeWin should be a "xcmsSet" object.')
     if (!is(ncGTWinput, 'ncGTWinput'))
-        stop('ncGTWoutput should be a "ncGTWoutput" object.')
-    if (!is(ncGTWinput, 'ncGTWinput'))
+        stop('ncGTWinput should be a "ncGTWinput" object.')
+    if (!is(ncGTWoutput, 'ncGTWoutput'))
         stop('ncGTWoutput should be a "ncGTWoutput" object.')
     if (ppm <= 0)
         stop('ppm should be larger than 0.')

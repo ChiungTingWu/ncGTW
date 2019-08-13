@@ -11,6 +11,7 @@
 #'
 #' @import xcms
 #' @import BiocParallel
+#' @import methods
 #' @importFrom grDevices dev.off png rgb
 #' @importFrom graphics matplot title
 #' @importFrom stats approx convolve cor kmeans median p.adjust pnorm sd t.test

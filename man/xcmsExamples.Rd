@@ -5,7 +5,7 @@
 \alias{xcmsExamples}
 \title{Examples of xcmsSet for inputs of ncGTW}
 \format{A list with two \code{\link[xcms]{xcmsSet-class}} objects and one
-    \code{ppm} parameter.}
+  \code{ppm} parameter.}
 \usage{
 data(xcmsExamples)
 }

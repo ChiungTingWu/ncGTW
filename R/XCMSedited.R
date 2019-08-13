@@ -1,15 +1,24 @@
-# Edited XCMS fillPeaksChromPar for feature-wise warping functions
-
+#' Edited XCMS fillPeaksChromPar for feature-wise warping functions
+#'
+#' This function is edited from \code{fillPeaksChromPar} in
+#' \code{\link[xcms]{fillPeaks.chrom-methods}} to accept feature-wise warping
+#' functions.
+#' @param arg A list sent from \code{\link[xcms]{fillPeaks.chrom-methods}}.
+#' @details This function is for parallelly filling missing peaks with
+#' feature-wise warping functions. The original function in
+#' \code{\link[xcms]{fillPeaks.chrom-methods}} can only handle sample-wise
+#' warping functions.
+#' @return A list of sameple index vector and filled peak matrix.
 
 fillPeaksChromPar <- function(arg) {
 
     suppressMessages(requireNamespace("xcms", quietly=TRUE))
     suppressMessages(requireNamespace("ncGTW", quietly=TRUE))
-    print('This is edited from XCMS (fillPeaksChromPar).....')
+    message('This is edited from XCMS (fillPeaksChromPar).....')
 
     params <- arg$params
     myID <- arg$id
-    cat(arg$file, "\n")
+    message(arg$file)
 
     prof <- params$prof
     rtcor <- params$rtcor
@@ -35,19 +44,10 @@ fillPeaksChromPar <- function(arg) {
         }
     }
 
-    #  if (length(prof) > 2)
-    #    lcraw@profparam <- prof[seq(3, length(prof))]
-    #    if (length(rtcor) == length(lcraw@scantime) ) {
-    #  lcraw@scantime <- rtcor
+
     if (!is.list(rtcor))
         rtcor <- list(rtcor)
     lcraw@profparam <- rtcor
-
-    #    } else {
-    #        warning("(corrected) retention time vector length mismatch for ",
-    #                basename(arg$file))
-    #   }
-
 
     ## Expanding the peakrange
     incrMz <- (peakrange[, "mzmax"] - peakrange[, "mzmin"]) / 2 * (expand.mz -1)
@@ -67,10 +67,25 @@ fillPeaksChromPar <- function(arg) {
     list(myID=myID, newpeaks=cbind(newpeaks, sample=myID))
 }
 
+#' Edited XCMS getPeaks for feature-wise warping functions
+#'
+#' This function is edited from \code{\link[xcms]{getPeaks-methods}} to accept
+#' feature-wise warping functions.
+#' @param object An \code{\link[xcms]{xcmsRaw-class}} object.
+#' @param peakrange \code{matrix} with 4 required columns \code{"mzmin"},
+#'   \code{"mzmax"}, \code{"rtmin"} and \code{"rtmax"}.
+#' @param step \code{numeric(1)} defining the bin size for the profile matrix
+#'   generation.
+#' @param naidx A vector contains the sample indexes need to be filled.
+#' @details This function is for parallelly filling missing peaks with
+#' feature-wise warping functions. The original code function in
+#' \code{\link[xcms]{getPeaks-methods}} can only handle sample-wise warping
+#' functions.
+#' @return A list of sameple index vector and filled peak matrix.
 
 getPeaksncGTW <- function(object, peakrange, step=0.1, naidx) {
     suppressMessages(requireNamespace("xcms", quietly=TRUE))
-    print('ncGTW fillpeaks\n')
+    message('ncGTW fillpeaks')
     ## Here we're avoiding the profFun call.
     if (all(c("mzmin","mzmax","rtmin","rtmax") %in% colnames(peakrange)))
         peakrange <- peakrange[,c("mzmin","mzmax","rtmin","rtmax"), drop=FALSE]
@@ -86,8 +101,8 @@ getPeaksncGTW <- function(object, peakrange, step=0.1, naidx) {
     basespace <- pi$basespace
     vps <- diff(c(object@scanindex, length(object@env$mz)))
 
-    cat("method_new: ", method, " ")
-    cat("step: ", step, "\n")
+    message("method_new: ", method, " ")
+    message("step: ", step)
     ## Create the profile matrix:
     pMat <- xcms:::.createProfileMatrix(mz = object@env$mz,
                                         int = object@env$intensity,

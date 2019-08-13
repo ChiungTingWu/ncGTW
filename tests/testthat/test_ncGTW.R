@@ -44,7 +44,7 @@ test_that("loadProfile loads all sample profiles, ncGTWalign realign the
     expect_equal(nrow(ncGTWinputs[[2]]@profiles), length(file))
 
     # initialize the parameters of ncGTW alignment with default
-    ncGTWparam <- initncGTWparam()
+    ncGTWparam <- new("ncGTWparam")
 
     # run ncGTW alignment
     ncGTWoutputs <- ncGTWalign(ncGTWinputs[[1]], xcmsLargeWin, 5,

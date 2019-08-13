@@ -2,7 +2,7 @@ Package: ncGTW
 Type: Package
 Title: Profile Alignment by Neighbor-wise Compound-specific Graphical Time 
     Warping with Misalignment Detection
-Version: 0.99.4
+Version: 0.99.5
 Author: Chiung-Ting Wu <ctwu@vt.edu>
 Maintainer: Chiung-Ting Wu <ctwu@vt.edu>
 biocViews: Software, MassSpectrometry, Metabolomics, Alignment
@@ -27,5 +27,6 @@ Imports:
     BiocParallel,
     grDevices, 
     graphics, 
-    stats
+    stats,
+    methods
 BugReports: https://github.com/ChiungTingWu/ncGTW/issues

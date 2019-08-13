@@ -55,7 +55,7 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 # initialize the parameters of ncGTW alignment with default
-ncGTWparam <- initncGTWparam()
+ncGTWparam <- new("ncGTWparam")
 
 # run ncGTW alignment
 ncGTWoutputs <- vector('list', length(ncGTWinputs))

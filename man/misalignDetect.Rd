@@ -5,7 +5,7 @@
 \title{Detect misaligned peak groups in xcmsSet object of XCMS}
 \usage{
 misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
-    maxRtWin = 50)
+  maxRtWin = 50)
 }
 \arguments{
 \item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger
@@ -24,8 +24,9 @@ The default is 0.05.}
 for filtering out some bad groups. The default is 50 (seconds).}
 }
 \value{
-A \code{group} slot in \code{\link[xcms]{xcmsSet-class}}-like matrix
-with all detected misaligned peak groups.
+A matrix with all detected misaligned peak groups. The column names
+are the same as \code{group} slot in \code{\link[xcms]{xcmsSet-class}}, but
+the first column is the group index.
 }
 \description{
 This function detects the misaligned peak groups with two

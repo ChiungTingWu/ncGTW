@@ -54,7 +54,7 @@
 #' @export
 
 plotGroup <-
-    function(ncGTWinput, sampleRt,sampleInd=seq_len(dim(ncGTWinput@rtRaw)[1]),
+    function(ncGTWinput, sampleRt, sampleInd=seq_len(dim(ncGTWinput@rtRaw)[1]),
         ind=NULL, savePath=NULL, show=TRUE, sub=TRUE, filter=FALSE){
     samNum <- dim(ncGTWinput@rtRaw)[1]
     profiles <- ncGTWinput@profiles

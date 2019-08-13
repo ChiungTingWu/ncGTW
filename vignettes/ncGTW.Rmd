@@ -211,7 +211,7 @@ strongly recommended to split the samples into several sub-groups.
 ```{r, message = FALSE}
 ncGTWoutputs <- vector('list', length(ncGTWinputs))
 # Prepare the output variable
-ncGTWparam <- initncGTWparam()
+ncGTWparam <- new("ncGTWparam")
 # Initialize the parameters of ncGTW alignment with default
 for (n in seq_along(ncGTWinputs))
     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, parSamp=5,

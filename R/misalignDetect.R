@@ -18,8 +18,9 @@
 #' in xcmsSmallWin, and find the corresponding peak group in xcmsLargeWin. The
 #' second step is to find the exclusive peak groups (the groups with no
 #' overlapping samples) with adjsted p-values smaller than \code{qThre}.
-#' @return A \code{group} slot in \code{\link[xcms]{xcmsSet-class}}-like matrix
-#' with all detected misaligned peak groups.
+#' @return A matrix with all detected misaligned peak groups. The column names
+#' are the same as \code{group} slot in \code{\link[xcms]{xcmsSet-class}}, but
+#' the first column is the group index.
 #' @examples
 #' # obtain data
 #' data('xcmsExamples')
@@ -99,20 +100,16 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 
     for (n in seq_along(smallWinGroupidx)){
         if (sum(matchTwoGroup[,n]) > 0){
-            # pvalues[n] <-
-            #     peakGroupPval(smallWinSampleidx[[n]], sampleNum, testNum)
             pvalues[n] <- peakGroupPvalOrder(smallWinSampleidx[[n]], sampleNum)
             pvalueIdx <- c(pvalueIdx, n)
         }
     }
 
-    #    peakMore1Idx <- which(lapply(smallWinSampleidx, length) > 1)
 
-    #    tempPval <- pvalues[peakMore1Idx]
     tempPval <- pvalues[pvalueIdx]
     tempQval <- p.adjust(tempPval, 'fdr')
     qvalues <- vector('integer', length(smallWinGroupidx)) + 1
-    #    qvalues[peakMore1Idx] <- tempQval
+
     qvalues[pvalueIdx] <- tempQval
 
     pqValues <- matrix(0, length(largeWinGroupidx), 2)

@@ -207,3 +207,54 @@ setMethod("rtncGTW", "ncGTWwarp", function(object) object@rtncGTW)
 #' @aliases ncGTWpeaks
 
 setMethod("ncGTWpeaks", "ncGTWwarp", function(object) object@ncGTWpeaks)
+
+
+setMethod("initialize", "ncGTWparam", function(.Object, ...) {
+            .Object <- callNextMethod()
+
+            if (length(.Object@downSample) == 0){
+                .Object@downSample <- 2
+            }
+            if (.Object@downSample < 1 ) {
+                stop("The value of 'downSample' must be larger or equal to 1.")
+            }
+
+            if (length(.Object@stpRat) == 0){
+                .Object@stpRat <- 0.6
+            }
+            if (.Object@stpRat <= 0 || .Object@stpRat > 1) {
+                stop("The value of 'stpRat' must be between 0 and 1.")
+            }
+
+            if (length(.Object@maxStp) == 0){
+                .Object@maxStp <- NaN
+            }
+            if (!is.nan(.Object@maxStp)){
+                if (.Object@maxStp < 1 || .Object@maxStp %% 1 != 0) {
+                    stop("The value of 'maxStp' must be a natural number.")
+                }
+            }
+
+            if (length(.Object@strNum) == 0){
+                .Object@strNum <- 1
+            }
+            if (.Object@strNum < 1 || .Object@strNum %% 1 != 0) {
+                stop("The value of 'strNum' must be a natural number.")
+            }
+
+            if (length(.Object@diaNum) == 0){
+                .Object@diaNum <- 1
+            }
+            if (.Object@diaNum < 1 || .Object@diaNum %% 1 != 0) {
+                stop("The value of 'diaNum' must be a natural number.")
+            }
+
+            if (length(.Object@nor) == 0){
+                .Object@nor <- 1
+            }
+            if (.Object@nor < 0) {
+                stop("The value of 'nor' must be larger or equal to 0.")
+            }
+            return(.Object)
+    }
+)

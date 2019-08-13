@@ -60,7 +60,7 @@ loadProfile <- function(filePaths, excluGroups, mzAdd=0.005, rtAdd=10,
         stop('the \'filePaths\' argument should be a character vector')
     if (!is.numeric(excluGroups))
         stop('the \'excluGroups\' argument should be a numeric matrix')
-    cName <- c("mzmed", "mzmin", "mzmax","rtmed", "rtmin", "rtmax")
+    cName <- c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax")
     if (!all(cName %in% colnames(excluGroups)))
         stop('the \'excluGroups\' argument should contain column names:
             "mzmed", "mzmin", "mzmax","rtmed", "rtmin", "rtmax"')
@@ -152,10 +152,6 @@ loadProfile <- function(filePaths, excluGroups, mzAdd=0.005, rtAdd=10,
 
 loadEic <- function(filePath, mzRange, rtRange, profstep){
 
-    # suppressMessages(requireNamespace("xcms", quietly = TRUE))
-
-    # rawProf <- suppressMessages(xcmsRaw(filePath, profstep))
-    # rawEic <- getEIC(rawProf, mzRange, rtRange)
     rawProf <- suppressMessages(xcmsRaw(filePath, 0))
 
     rawEic <- vector('list', dim(mzRange)[1])
@@ -169,6 +165,5 @@ loadEic <- function(filePath, mzRange, rtRange, profstep){
 
     gc()
 
-    # return(rawEic@eic$xcmsRaw)
     return(rawEic)
 }

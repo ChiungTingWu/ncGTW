@@ -5,7 +5,7 @@
 \title{Run ncGTW alignment}
 \usage{
 ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
-    bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
+  bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
 }
 \arguments{
 \item{ncGTWinput}{A \code{\link{ncGTWinput}} object.}
@@ -21,7 +21,7 @@ and can be created by
 \code{\link[BiocParallel:MulticoreParam-class]{MulticoreParam}}, or
 \code{\link[BiocParallel:SnowParam-class]{SnowParam}}.}
 
-\item{ncGTWparam}{A list object returned by \code{\link{initncGTWparam}}.}
+\item{ncGTWparam}{A \code{\link{ncGTWparam}} object.}
 }
 \value{
 A \code{\link{ncGTWoutput}} object.
@@ -61,7 +61,7 @@ file <- file[sort.int(tempInd, index.return = TRUE)$ix]
 ncGTWinputs <- loadProfile(file, excluGroups)
 
 # initialize the parameters of ncGTW alignment with default
-ncGTWparam <- initncGTWparam()
+ncGTWparam <- new("ncGTWparam")
 
 # run ncGTW alignment
 ncGTWoutputs <- vector('list', length(ncGTWinputs))

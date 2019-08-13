@@ -10,7 +10,7 @@
 #'   \code{\link[BiocParallel:SerialParam-class]{SerialParam}},
 #'   \code{\link[BiocParallel:MulticoreParam-class]{MulticoreParam}}, or
 #'   \code{\link[BiocParallel:SnowParam-class]{SnowParam}}.
-#' @param ncGTWparam A list object returned by \code{\link{initncGTWparam}}.
+#' @param ncGTWparam A \code{\link{ncGTWparam}} object.
 #' @details This function realign the input feature with ncGTW alignment
 #' function with given m/z and RT range.
 #' @return A \code{\link{ncGTWoutput}} object.
@@ -42,7 +42,7 @@
 #' ncGTWinputs <- loadProfile(file, excluGroups)
 #'
 #' # initialize the parameters of ncGTW alignment with default
-#' ncGTWparam <- initncGTWparam()
+#' ncGTWparam <- new("ncGTWparam")
 #'
 #' # run ncGTW alignment
 #' ncGTWoutputs <- vector('list', length(ncGTWinputs))
@@ -58,7 +58,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
     if (!is(xcmsLargeWin, 'xcmsSet'))
         stop('xcmsLargeWin should be a "xcmsSet" object.')
     if (!is(ncGTWinput, 'ncGTWinput'))
-        stop('ncGTWoutput should be a "ncGTWoutput" object.')
+        stop('ncGTWinput should be a "ncGTWinput" object.')
     if (parSamp <= 1 || parSamp %% 1 != 0)
         stop('parSamp should be an integer which larger than 1.')
 
@@ -147,11 +147,6 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 
     path <- pathCombine(parPath, path2, ncGTWpar$parInd)
 
-    #   return(
-    #       list(parPath = parPath, path2 = path2, parStat = parStat,
-    #           parInd = parInd, smoM2 = smoM2, data = data,
-    #           scanRange= scanRange, warpedAll = warpedAll,
-    #           downSample = downSample))
     return(new("ncGTWoutput", alignData=ncGTWpar$data, scanRange=scanRange,
         ncGTWpath=path, downSample=ncGTWparam$downSample))
 }
@@ -159,45 +154,38 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
 
 initHidparam <- function(ncGTWparam, ncGTWinput){
 
-    ncGTWparam$downSample <- if (is.null(ncGTWparam$downSample)) 2 else
-        ncGTWparam$downSample
+    ncGTWparam2 <- list()
 
-    ncGTWparam$nor <- if (is.null(ncGTWparam$nor)) 1 else ncGTWparam$nor
+    ncGTWparam2$downSample <- if (is.null(ncGTWparam@downSample)) 2 else
+        ncGTWparam@downSample
 
-    ncGTWparam$strNum <- if (is.null(ncGTWparam$strNum)) 1 else
-        ncGTWparam$strNum
+    ncGTWparam2$nor <- if (is.null(ncGTWparam@nor)) 1 else ncGTWparam@nor
 
-    ncGTWparam$diaNum <- if (is.null(ncGTWparam$diaNum)) 1 else
-        ncGTWparam$diaNum
+    ncGTWparam2$strNum <- if (is.null(ncGTWparam@strNum)) 1 else
+        ncGTWparam@strNum
 
-    ncGTWparam$mir <- if (is.null(ncGTWparam$mir)) TRUE else ncGTWparam$mir
+    ncGTWparam2$diaNum <- if (is.null(ncGTWparam@diaNum)) 1 else
+        ncGTWparam@diaNum
 
-    ncGTWparam$stpRat <- if (is.null(ncGTWparam$stpRat)) 0.6 else
-        ncGTWparam$stpRat
+    ncGTWparam2$mir <- TRUE
 
-    ncGTWparam$maxStp <- if (is.null(ncGTWparam$maxStp))
-        round(dim(ncGTWinput@rtRaw)[2] %/% ncGTWparam$downSample *
-            ncGTWparam$stpRat) else ncGTWparam$maxStp
+    ncGTWparam2$stpRat <- if (is.null(ncGTWparam@stpRat)) 0.6 else
+        ncGTWparam@stpRat
 
-    ncGTWparam$rangeThre <- if (is.null(ncGTWparam$rangeThre)) 1 else
-        ncGTWparam$rangeThre
+    ncGTWparam2$maxStp <- if (is.nan(ncGTWparam@maxStp))
+        round(dim(ncGTWinput@rtRaw)[2] %/% ncGTWparam2$downSample *
+            ncGTWparam2$stpRat) else ncGTWparam@maxStp
 
-    ncGTWparam$biP <- if (is.null(ncGTWparam$biP)) TRUE else ncGTWparam$biP
+    ncGTWparam2$rangeThre <- 1
+    ncGTWparam2$biP <- TRUE
+    ncGTWparam2$mu <- 0
+    ncGTWparam2$sigma <- 1
+    ncGTWparam2$weiP <- 0
+    ncGTWparam2$logt <- 0
+    ncGTWparam2$dia <- 0
+    ncGTWparam2$noiseVar <- 1
 
-    ncGTWparam$mu <- if (is.null(ncGTWparam$mu)) 0 else ncGTWparam$mu
-
-    ncGTWparam$sigma <- if (is.null(ncGTWparam$sigma)) 1 else ncGTWparam$sigma
-
-    ncGTWparam$weiP <- if (is.null(ncGTWparam$weiP)) 0 else ncGTWparam$weiP
-
-    ncGTWparam$logt <- if (is.null(ncGTWparam$logt)) 0 else ncGTWparam$logt
-
-    ncGTWparam$dia <- if (is.null(ncGTWparam$dia)) 0 else ncGTWparam$dia
-
-    ncGTWparam$noiseVar <-
-        if (is.null(ncGTWparam$noiseVar)) 1 else ncGTWparam$noiseVar
-
-    return(ncGTWparam)
+    return(ncGTWparam2)
 }
 
 
