@@ -1,0 +1,17 @@
+citHeader("To cite the ncGTW package in publications use:")
+
+citEntry(entry="article",
+    author=c(person("Chiung-Ting", "Wu"),
+            person("David", "Herrington", "M."),
+            person("Yizhi", "Wang"),
+            person("Timothy", "Ebbels"),
+            person("Ibrahim", "Karaman"),
+            person("Yue", "Wang"),
+            person("Guoqiang", "Yu")),
+    title="Alignment of LC-MS Profiles by Neighbor-wise Compound-specific Graphical Time Warping with Misalignment Detection",
+    journal="bioRxiv",
+    pages={715334},
+    year="2019",
+    doi="10.1101/715334",
+    textVersion = paste("Wu, Chiung-Ting, et al.",
+    "Alignment of LC-MS Profiles by Neighbor-wise Compound-specific Graphical Time Warping with Misalignment Detection.", "bioRxiv, 2019, 715334."))

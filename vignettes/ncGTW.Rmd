@@ -25,18 +25,18 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Neighbor-wise Compound-specific Graphical Time Warping (ncGTW) is an alignment
-algorithm that can align LC-MS profiles by leveraging expected retention time
-(RT) drift structures and compound-specific warping functions. This algorithm is
-improved from graphical time warping (GTW) [@gtw16], a popular dynamic time
-warping (DTW) based alignment method [@dtw90]. Specifically, ncGTW uses
-individualized warping functions for different compounds and assigns constraint
-edges on warping functions of neighboring samples. That is, ncGTW avoids the
-popular but not accurate assumption which assumes all the m/z bins in the same
-sample share the same warping function. This assumption often fails when the
-dataset contains hundreds of samples or the data acquisition time longer than a
-week. Moreover, by considering the RT drifts structure, ncGTW can align RT more
-accurately.
+Neighbor-wise Compound-specific Graphical Time Warping (ncGTW) [@ncgtw19] is an 
+alignment algorithm that can align LC-MS profiles by leveraging expected 
+retention time (RT) drift structures and compound-specific warping functions. 
+This algorithm is improved from graphical time warping (GTW) [@gtw16], a popular
+dynamic time warping (DTW) based alignment method [@dtw90]. Specifically, ncGTW 
+uses individualized warping functions for different compounds and assigns 
+constraint edges on warping functions of neighboring samples. That is, ncGTW 
+avoids the popular but not accurate assumption which assumes all the m/z bins in
+the same sample share the same warping function. This assumption often fails 
+when the dataset contains hundreds of samples or the data acquisition time 
+longer than a week. Moreover, by considering the RT drifts structure, ncGTW can
+align RT more accurately.
 
 `ncGTW` is an R package developed as a plug-in of `xcms`, a popular LC-MS data
 analysis R package [@xcms06; @xcms08; @xcms10]. Due to the same warping function
