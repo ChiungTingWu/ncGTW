@@ -137,6 +137,7 @@ getPeaksncGTW <- function(object, peakrange, step=0.1, naidx) {
         if (length(stime) == 1) {
             stime_temp <- stime[[1]]
         } else {
+            message("Feature-wise warpping function:", naidx[i])
             stime_temp <- stime[[naidx[i]]]
         }
 

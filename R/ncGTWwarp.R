@@ -479,10 +479,10 @@ findUniPeak <- function(peaks, groupInd, groupidx, ppm=1e6, sampleInd=NULL){
         return(Peaks)
 
     tempInd <- sort(Peaks[ , 'maxo'], index.return = TRUE, decreasing = TRUE)$ix
-    Peaks <- Peaks[tempInd, ]
-    Peaks <- Peaks[!duplicated(Peaks[,c('rt', 'sample')]), , drop = FALSE]
+    Peaks <- Peaks[tempInd, , drop = FALSE]
+    Peaks <- Peaks[!duplicated(Peaks[,c('rt', 'sample'), drop = FALSE]), , drop = FALSE]
     tempInd <- sort(Peaks[ , 'peakInd'], index.return = TRUE)$ix
-    Peaks <- Peaks[tempInd, ]
+    Peaks <- Peaks[tempInd, , drop = FALSE]
 
     rmInd <- matrix(TRUE, dim(Peaks)[1], 1)
 
