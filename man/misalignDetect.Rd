@@ -5,7 +5,7 @@
 \title{Detect misaligned peak groups in xcmsSet object of XCMS}
 \usage{
 misalignDetect(xcmsLargeWin, xcmsSmallWin, ppm, qThre = 0.05,
-  maxRtWin = 50)
+  overlapRate = 0, maxRtWin = 50)
 }
 \arguments{
 \item{xcmsLargeWin}{A \code{\link[xcms]{xcmsSet-class}} object with a larger
@@ -19,6 +19,9 @@ detection function in \code{xcms}.}
 
 \item{qThre}{The threshould of the p-value after multiple test correction.
 The default is 0.05.}
+
+\item{overlapRate}{The threshould of the overlapping rate of sample index.
+The default is 0.}
 
 \item{maxRtWin}{The threshould of the maximum retension time range. This is
 for filtering out some bad groups. The default is 50 (seconds).}

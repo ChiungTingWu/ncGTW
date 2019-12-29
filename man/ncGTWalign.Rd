@@ -4,8 +4,9 @@
 \alias{ncGTWalign}
 \title{Run ncGTW alignment}
 \usage{
-ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
-  bpParam = BiocParallel::SnowParam(workers = 1), ncGTWparam = NULL)
+ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10, k1Num = 3,
+  k2Num = 1, bpParam = BiocParallel::SnowParam(workers = 1),
+  ncGTWparam = NULL)
 }
 \arguments{
 \item{ncGTWinput}{A \code{\link{ncGTWinput}} object.}
@@ -14,6 +15,12 @@ ncGTWalign(ncGTWinput, xcmsLargeWin, parSamp = 10,
 
 \item{parSamp}{Decide how many samples are in each group when considering
 parallel computing, and the default is 10.}
+
+\item{k1Num}{Decide how many different k1 will be tested in stage 1. The
+default is 3.}
+
+\item{k2Num}{Decide how many different k2 will be tested in stage 2. The
+default is 1.}
 
 \item{bpParam}{A object of \pkg{BiocParallel} to control parallel processing,
 and can be created by
