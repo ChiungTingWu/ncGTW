@@ -33,9 +33,9 @@
 #' @export
 
 misalignDetect <- function(xcmsLargeWin, xcmsSmallWin, ppm, qThre=0.05,
-    maxRtWin=50){
+    overlapRate=0, maxRtWin=50){
     groupInfo <- splitGroupPval(xcmsLargeWin, xcmsSmallWin)
-    excluInfo <- exclusiveGroups(groupInfo, ppm, qThre)
+    excluInfo <- exclusiveGroups(groupInfo, ppm, qThre, overlapRate)
     excluGroups <- excluInfo$excluGroups
 
     rtWin <-  excluGroups[ , 'rtmax'] - excluGroups[ , 'rtmin']
@@ -137,7 +137,7 @@ splitGroupPval <- function(xcmsLargeWin, xcmsSmallWin) {
 }
 
 
-exclusiveGroups <- function(groupInfo, ppm, qThre){
+exclusiveGroups <- function(groupInfo, ppm, qThre, overlapRate){
     excluGroupsNum <- vector('integer', length(groupInfo$largeWinGroupidx))
     excluLargeSmall <- vector('list', length(groupInfo$largeWinGroupidx))
     excluPval <- vector('list', length(groupInfo$largeWinGroupidx))
@@ -155,7 +155,9 @@ exclusiveGroups <- function(groupInfo, ppm, qThre){
             for (i in seq_len(tempGroupNum - 1)){
                 for (j in seq.int(i+1, tempGroupNum)){
                     if (length(intersect(tempGroups[[i]],
-                        tempGroups[[j]])) <= 0){
+                        tempGroups[[j]])) /
+                        max(length(tempGroups[[i]]),
+                            length(tempGroups[[j]]))<= overlapRate){
                         if (abs(groups[tempInd[i], 'mzmed'] -
                                 groups[tempInd[j], 'mzmed']) /
                             min(groups[tempInd[i], 'mzmed'],
