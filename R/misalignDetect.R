@@ -11,6 +11,8 @@
 #'   detection function in \code{xcms}.
 #' @param qThre The threshould of the p-value after multiple test correction.
 #'   The default is 0.05.
+#' @param overlapRate The threshould of the overlapping rate of sample index.
+#'   The default is 0.
 #' @param maxRtWin The threshould of the maximum retension time range. This is
 #'   for filtering out some bad groups. The default is 50 (seconds).
 #' @details This function includes two major steps to determine a peak group is

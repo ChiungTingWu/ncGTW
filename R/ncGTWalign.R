@@ -5,6 +5,10 @@
 #' @param xcmsLargeWin A \code{\link[xcms]{xcmsSet-class}} object.
 #' @param parSamp Decide how many samples are in each group when considering
 #'   parallel computing, and the default is 10.
+#' @param k1Num Decide how many different k1 will be tested in stage 1. The
+#'   default is 3.
+#' @param k2Num Decide how many different k2 will be tested in stage 2. The
+#'   default is 1.
 #' @param bpParam A object of \pkg{BiocParallel} to control parallel processing,
 #'   and can be created by
 #'   \code{\link[BiocParallel:SerialParam-class]{SerialParam}},
@@ -52,8 +56,8 @@
 #' }
 #' @export
 
-ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10,
-    bpParam = BiocParallel::SnowParam(workers=1), ncGTWparam=NULL){
+ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10, k1Num=3, k2Num=1,
+    bpParam=BiocParallel::SnowParam(workers=1), ncGTWparam=NULL){
 
     if (!is(xcmsLargeWin, 'xcmsSet'))
         stop('xcmsLargeWin should be a "xcmsSet" object.')
