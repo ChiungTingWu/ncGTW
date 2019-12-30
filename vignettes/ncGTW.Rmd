@@ -215,7 +215,7 @@ ncGTWparam <- new("ncGTWparam")
 # Initialize the parameters of ncGTW alignment with default
 for (n in seq_along(ncGTWinputs))
     ncGTWoutputs[[n]] <- ncGTWalign(ncGTWinputs[[n]], xcmsLargeWin, parSamp=5,
-        bpParam=SnowParam(workers=4), ncGTWparam)
+        bpParam=SnowParam(workers=4), ncGTWparam=ncGTWparam)
 # Perform ncGTW alignment
 ```
 

@@ -64,9 +64,13 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10, k1Num=3, k2Num=1,
     if (!is(ncGTWinput, 'ncGTWinput'))
         stop('ncGTWinput should be a "ncGTWinput" object.')
     if (parSamp <= 1 || parSamp %% 1 != 0)
-        stop('parSamp should be an integer which larger than 1.')
+        stop('parSamp should be an integer which is larger than 1.')
+    if (k1Num <= 0 || k1Num %% 1 != 0)
+        stop('k1Num should be an integer which is larger than 0.')
+    if (k2Num <= 0 || k2Num %% 1 != 0)
+        stop('k2Num should be an integer which is larger than 0.')
 
-    ncGTWparam <- initHidparam(ncGTWparam, ncGTWinput)
+    ncGTWparam <- initHidparam(ncGTWparam, ncGTWinput, k1Num, k2Num)
     groupInd <- ncGTWinput@groupInfo[1]
     scanRangeOld <- ncGTWinput@rtRaw
 
@@ -85,7 +89,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10, k1Num=3, k2Num=1,
 
     parPath <- replicate(parSect, list(vector('list', parSamp)))
     parWarped <- array(0, c(parSamp, specLen, parSect))
-    parStat <- array(0, c(3, 3, parSect))
+    parStat <- array(0, c(k1Num * k2Num, 5, parSect))
 
     for (n in seq_len(parSect)){
         parPath[[n]] <- ncGTW1stOutput[[n]]$parPath
@@ -156,7 +160,7 @@ ncGTWalign <- function(ncGTWinput, xcmsLargeWin, parSamp=10, k1Num=3, k2Num=1,
 }
 
 
-initHidparam <- function(ncGTWparam, ncGTWinput){
+initHidparam <- function(ncGTWparam, ncGTWinput, k1Num, k2Num){
 
     ncGTWparam2 <- list()
 
@@ -188,6 +192,8 @@ initHidparam <- function(ncGTWparam, ncGTWinput){
     ncGTWparam2$logt <- 0
     ncGTWparam2$dia <- 0
     ncGTWparam2$noiseVar <- 1
+    ncGTWparam2$k1Num <- k1Num
+    ncGTWparam2$k2Num <- k2Num
 
     return(ncGTWparam2)
 }
@@ -293,6 +299,8 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
     downSample <- ncGTWparam$downSample
     rangeThre <- ncGTWparam$rangeThre
     maxStp <- ncGTWparam$maxStp
+    k1Num <- ncGTWparam$k1Num
+    k2Num <- ncGTWparam$k2Num
 
     gtwPrep <- buildMultiParaValidmap(parspec, mir, strNum, diaNum, biP)
     eeBet <- betEdge(gtwPrep, 10^-32, ncGTWparam)
@@ -308,12 +316,21 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
     costMax <- cutMerge[length(cutMerge)]
     smoTemp <- (costMax - costMin) / s1BrokenNum
 
-    smoM <- matrix(999, 3, 3)
-    smoM[1, 1] <- smoTemp
-    tempPath <- vector('list', dim(smoM)[1])
+    BNumDTW1 <- matrix(-1, 3, 3)
+    BNumDTW1[1, 1] <- 0
+    BNumDTW1[2, 1] <- s1BrokenNum
+    BNumDTW1[3, 1] <- costMin
+    BNumDTW1[1, 3] <- Inf
+    BNumDTW1[2, 3] <- 0
+    BNumDTW1[3, 3] <- costMax
+
+    smoM <- array(999, c(k1Num, k2Num, 5))
+    smoM[1, ,1] <- smoTemp
+    BNumDTW1[1, 2] <- smoTemp
+    tempPath <- vector('list', k1Num * k2Num)
 
     for (smo in seq_len(dim(smoM)[1])){
-        gtwRes1 <- gtwCut(gtwPrep, smoM[smo, 1], ncGTWparam)
+        gtwRes1 <- gtwCut(gtwPrep, smoM[smo, 1,1], ncGTWparam)
         cut1 <- gtwRes1$cut
         gtwInfo1 <- gtwRes1$gtwInfo
         path1 <- label2path(gtwRes1$cut, gtwRes1$gtwInfo)
@@ -325,6 +342,12 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
             message(format(Sys.time()),
                 ' Solved the 1st maximum flow, top layer.')
         }
+        brokenNum1 <- sum((cut1[eeBet[ ,1]] + cut1[eeBet[ ,2]]) == 1)
+        tempInd <- (smo - 2^floor(log2(smo)) + 1) * 2
+        BNumDTW1[2, tempInd] <- brokenNum1
+        BNumDTW1[3, tempInd] <- cut1[length(cut1)] - smoM[smo, 1,1] * brokenNum1
+        smoM[smo, ,2] <- brokenNum1
+
         validMap2 <- matrix(0, parnum, parnum)
         for (jj in seq_len(parnum))
             for (ii in seq((jj + 1), parnum, length = max(0, parnum - jj)))
@@ -336,49 +359,102 @@ ncGTWalignSmo <- function(parInfo, xcmsLargeWin, scanRange,
         gtwPrep2 <- list(validMap=validMap2, tst=tst2, ref=ref2)
         gtwRes2 <- gtwCut(gtwPrep2, smoothnessV2, ncGTWparam, 1, path1,
             gtwPrep$pairMap)
+        eeBet2 <- gtwRes2$eeBet
         s2BrokenNum <- gtwRes2$cut[length(gtwRes2$cut)] / smoothnessV2
         parS2BrokenNum <- s2BrokenNum #####
         parS2 <- 2 * (maxStp - 1) * parnum / s2BrokenNum ###############
         smoothnessV2 <- parS2 / noiseVar
 
-        gtwRes2 <- gtwCut(gtwPrep2, smoothnessV2, ncGTWparam, 1, path1,
-            gtwPrep$pairMap)
-        cut2 <- gtwRes2$cut
-        gtwInfo2 <- gtwRes2$gtwInfo
-        path2 <- label2path(cut2, gtwInfo2)
-        tempPath[[smo]] <- path2
-        if (n != 0){
-            message(format(Sys.time()),
-                ' Solved the 2nd maximum flow, section ', n, ' of ', parSect,
-                ', bottom layer.')
-        } else{
+        BNumDTW2 <- matrix(-1, 3, 3)
+        BNumDTW2[1, 1] <- 0
+        BNumDTW2[2, 1] <- s2BrokenNum
+        BNumDTW2[3, 1] <- 0
+        BNumDTW2[1, 3] <- Inf
+        BNumDTW2[2, 3] <- 0
+        BNumDTW2[3, 3] <- 2 * (maxStp - 1) * parnum
+        smoM[smo, 1, 4] <- smoothnessV2
+        BNumDTW2[1, 2] <- smoothnessV2
+
+        for (smo2 in seq_len(dim(smoM)[2])){
+
+            gtwRes2 <- gtwCut(gtwPrep2, smoM[smo, smo2,4], ncGTWparam, 1, path1,
+                gtwPrep$pairMap)
+            cut2 <- gtwRes2$cut
+            gtwInfo2 <- gtwRes2$gtwInfo
+            path2 <- label2path(cut2, gtwInfo2)
+            tempPath[[(smo-1) * k2Num + smo2]] <- path2
+            if (n != 0){
+                message(format(Sys.time()),
+                    ' Solved the 2nd maximum flow, section ', n, ' of ', parSect,
+                    ', bottom layer.')
+            } else{
             message(format(Sys.time()),
                 ' Solved the 2nd maximum flow, top layer.')
-        }
-        if (second){
-            temp2path <- pathCombine(parPath, path2, parInd)
-            statResult <- smoTest(xcmsLargeWin, groupInd, data, scanRange,
-                seq_len(dim(data)[1]), temp2path, downSample, scanRangeOld)
-        } else{
-            statResult <- smoTest(xcmsLargeWin, groupInd, parspec, scanRange,
-                parind, path2, downSample, scanRangeOld)
-        }
+            }
 
-        tempRange <- statResult[3, 2]
-        brokenNum1 <- sum((cut1[eeBet[ ,1]] + cut1[eeBet[ ,2]]) == 1)
-        smoM[smo, 2] <- brokenNum1
-        smoM[smo, 3] <- tempRange
+            brokenNum2 <- sum((cut2[eeBet2[ ,1]] + cut2[eeBet2[ ,2]]) == 1)
+            tempInd <- (smo2 - 2^floor(log2(smo2)) + 1) * 2
+            BNumDTW2[2, tempInd] <- brokenNum2
+            BNumDTW2[3, tempInd] <- cut2[length(cut2)] -
+                smoM[smo, smo2, 4] * brokenNum2
+            smoM[smo, smo2, 5] <- brokenNum2
 
+            if (second){
+                temp2path <- pathCombine(parPath, path2, parInd)
+                statResult <- smoTest(xcmsLargeWin, groupInd, data, scanRange,
+                    seq_len(dim(data)[1]), temp2path, downSample, scanRangeOld)
+            } else{
+                statResult <- smoTest(xcmsLargeWin, groupInd, parspec, scanRange,
+                    parind, path2, downSample, scanRangeOld)
+            }
+
+            tempRange <- statResult[3, 2]
+
+
+            smoM[smo, smo2, 3] <- tempRange
+
+            if (tempRange <= rangeThre)
+                break
+
+            if ((as.integer(log2(smo2+1)) - log2(smo2+1)) == 0 &&
+                smo2 < dim(smoM)[2]){
+
+                tBNumDTW2 <- matrix(-1, 3, smo2*2 + 3)
+                for (tsmo2 in seq_len(dim(tBNumDTW2)[2])){
+                    if (as.integer(tsmo2/2) != tsmo2/2){
+                        tBNumDTW2[, tsmo2] = BNumDTW2[,(tsmo2+1)/2]
+                    } else{
+                        tBNumDTW2[1, tsmo2] =
+                            (BNumDTW2[3, tsmo2/2 + 1] - BNumDTW2[3, tsmo2/2]) /
+                            (BNumDTW2[2, tsmo2/2] - BNumDTW2[2, tsmo2/2 + 1])
+                        if (smo2 + tsmo2/2 <= dim(smoM)[2])
+                            smoM[smo, smo2 + tsmo2/2, 4] = tBNumDTW2[1, tsmo2]
+                    }
+                }
+                BNumDTW2 <- tBNumDTW2
+            }
+        }
         if (tempRange <= rangeThre)
             break
 
-        if (smo == 1){
-            smoM[2, 1] <- (costMax - cut1[length(cut1)]) / brokenNum1 + smoTemp
-            tempCost <- cut1[length(cut1)] - smoTemp * brokenNum1
-            smoM[3, 1] <- (tempCost - costMin) / (s1BrokenNum - brokenNum1)
+        if ((as.integer(log2(smo+1)) - log2(smo+1)) == 0 && smo < dim(smoM)[1]){
+            tBNumDTW1 <- matrix(-1, 3, smo*2 + 3)
+            for (tsmo in seq_len(dim(tBNumDTW1)[2])){
+                if (as.integer(tsmo/2) != tsmo/2){
+                    tBNumDTW1[, tsmo] = BNumDTW1[,(tsmo+1)/2]
+                } else{
+                    tBNumDTW1[1, tsmo] =
+                        (BNumDTW1[3, tsmo/2 + 1] - BNumDTW1[3, tsmo/2]) /
+                        (BNumDTW1[2, tsmo/2] - BNumDTW1[2, tsmo/2 + 1])
+                    if (smo + tsmo/2 <= dim(smoM)[1])
+                        smoM[smo + tsmo/2, ,1] = tBNumDTW1[1, tsmo]
+                }
+            }
+            BNumDTW1 <- tBNumDTW1
         }
     }
-    return(list(smoM=smoM, tempPath=tempPath, parS1BrokenNum = parS1BrokenNum,
+    return(list(smoM=matrix(aperm(smoM, c(2,1,3)), k1Num * k2Num, 5),
+        tempPath=tempPath, parS1BrokenNum = parS1BrokenNum,
         parS2BrokenNum = parS2BrokenNum, parS2 = parS2))
 }
 
@@ -393,7 +469,7 @@ chooseSmo <- function(smoM, tempPath, parInfo, ncGTWparam, bestSmo=NULL){
     if (is.null(bestSmo)){
         bestSmo <- which(smoM[ , 3] < rangeThre)##
         if (length(bestSmo) > 1){
-            bestSmo <- bestSmo[which.max(smoM[bestSmo, 1])]
+            bestSmo <- bestSmo[which.max(smoM[bestSmo, 1] / smoM[bestSmo, 4])]
         } else if (length(bestSmo) == 0){
             bestSmo <- which.min(smoM[ , 3])
         }
@@ -426,9 +502,11 @@ gtwCut <- function(gtwPrep, smooth, ncGTWparam, type=0, path=NA, pairMap=NA){
         ncGTWparam$mu, ncGTWparam$sigma, ncGTWparam$biP, ncGTWparam$weiP, type,
         path, pairMap)
 
+    eeBet <- gtwInfo$ee[gtwInfo$ee[, 3] == smooth & gtwInfo$ee[, 4] == smooth, ]
+
     cut <- graphCut(gtwInfo$ss, gtwInfo$ee)
 
-    return(list(gtwInfo = gtwInfo, cut = cut))
+    return(list(gtwInfo = gtwInfo, eeBet = eeBet, cut = cut))
 }
 
 
