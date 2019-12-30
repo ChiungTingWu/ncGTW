@@ -6,7 +6,7 @@ date: "`r Sys.Date()`"
 bibliography: references.bib
 csl: biomed-central.csl
 output: 
-    BiocStyle::pdf_document:
+    BiocStyle::html_document:
         toc: true
 vignette: >
     %\VignetteIndexEntry{ncGTW User Manual}
